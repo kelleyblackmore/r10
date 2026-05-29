@@ -1,0 +1,88 @@
+name: Build installers
+
+# Build downloadable installers for macOS (.dmg, both architectures) and
+# Windows (.exe). Pushing a version tag (e.g. `v0.1.0`) builds them and
+# attaches them to a GitHub Release. You can also run it manually from the
+# Actions tab (artifacts only, no release) via "Run workflow".
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed to create/update the Release and upload assets
+
+jobs:
+  macos:
+    name: macOS (.dmg arm64 + x64)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The macOS runner is Apple Silicon, so `npm ci` only fetches the arm64
+      # engine binary. Pull the matching x64 binary too, otherwise the Intel
+      # .dmg would ship the wrong-arch native engine.
+      - name: Add Intel (x64) engine binary
+        run: |
+          VER=$(node -p "require('node-llama-cpp/package.json').version")
+          npm install --no-save --force "@node-llama-cpp/mac-x64@${VER}"
+
+      - name: Build .dmg (arm64 + x64)
+        env:
+          # Unsigned build — don't let electron-builder hunt for a signing identity.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npx electron-builder --mac --publish never
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: r10-macos-dmg
+          path: release/*.dmg
+          if-no-files-found: error
+
+      - name: Attach to Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.dmg
+
+  windows:
+    name: Windows (.exe)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The Windows build targets the OpenAI-compatible API engine, so the
+      # native GGUF engine isn't required here.
+      - name: Build .exe installer
+        run: npx electron-builder --win --publish never
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: r10-windows-exe
+          path: release/*.exe
+          if-no-files-found: error
+
+      - name: Attach to Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.exe

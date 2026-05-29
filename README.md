@@ -86,6 +86,24 @@ This yields `release/r10 Setup <version>.exe` (x64). The installer lets the user
 
 > **Embedded engine on Windows:** not bundled by default — `npm install` on a non-Windows host won't fetch `@node-llama-cpp/win-x64`, and the API engine doesn't need it. If you *do* want the built-in GGUF engine on Windows, build on Windows (or `npm install --no-save --force @node-llama-cpp/win-x64` first) and select an engine other than API. Otherwise r10 reports the built-in engine as unavailable and you use **API** (or Ollama).
 
+## Releases (automated builds)
+
+A GitHub Actions workflow (`.github/workflows/build.yml`) builds the installers on GitHub's runners — no local toolchain needed:
+
+- **macOS** runner → both `.dmg`s (arm64 + Intel x64)
+- **Windows** runner → the `.exe` installer
+
+**Cut a release** by pushing a version tag:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The workflow builds all three installers and attaches them to a GitHub **Release** for that tag, so anyone can download them from the repo's Releases page. You can also trigger it manually from the **Actions → Build installers → Run workflow** button (that run uploads the installers as workflow *artifacts* but doesn't create a Release).
+
+> Builds are **unsigned** (no Apple Developer ID / Windows cert), so first launch still shows the Gatekeeper / SmartScreen prompt described above.
+
 ## Start / stop / uninstall
 
 | Action | How |
