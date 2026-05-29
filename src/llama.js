@@ -16,6 +16,14 @@ let _available = false;
 let _visionSupported = false;
 let _initPromise = null;
 const _models = new Map(); // path -> loaded model
+const _contexts = new Map(); // model -> { context, sequence }
+const _inFlight = new Set(); // models with a prompt currently streaming
+
+// Cap the context window. The auto-picked size for these models is huge
+// (e.g. 27k tokens), and allocating that KV cache costs ~5s *per context*.
+// A chat companion never needs more than a few thousand tokens of history, and
+// 4096 makes context creation effectively instant.
+const CONTEXT_SIZE = 4096;
 
 function modelDir() {
   const dir = path.join(app.getPath('userData'), 'models');
@@ -144,6 +152,19 @@ async function _getModel(settings, vision, onProgress) {
   return model;
 }
 
+// One context (and its sequence) is created per model and reused for every
+// turn. Creating it is the expensive part (~5s uncapped); reusing it also keeps
+// the KV cache warm so the shared prefix (system prompt + history) doesn't need
+// re-evaluating, dropping time-to-first-token to ~0.1s on repeat turns.
+async function _getContext(model) {
+  let entry = _contexts.get(model);
+  if (entry) return entry;
+  const context = await model.createContext({ contextSize: CONTEXT_SIZE });
+  entry = { context, sequence: context.getSequence() };
+  _contexts.set(model, entry);
+  return entry;
+}
+
 function _toChatHistory(systemPrompt, history) {
   const items = [];
   if (systemPrompt) items.push({ type: 'system', text: systemPrompt });
@@ -164,11 +185,19 @@ async function chatStream({ settings, history, message, image, onChunk, onProgre
   }
 
   const model = await _getModel(settings, false, onProgress);
-  const context = await model.createContext();
+
+  // The sequence/KV cache is single-threaded — overlapping prompts on the same
+  // sequence would corrupt each other. Guard against concurrent calls.
+  if (_inFlight.has(model)) {
+    const err = new Error('Built-in engine is busy with another message.');
+    err.kind = 'busy';
+    throw err;
+  }
+
+  const { sequence } = await _getContext(model);
+  _inFlight.add(model);
   try {
-    const session = new _mod.LlamaChatSession({
-      contextSequence: context.getSequence(),
-    });
+    const session = new _mod.LlamaChatSession({ contextSequence: sequence });
     session.setChatHistory(_toChatHistory(settings.systemPrompt, history));
     let full = '';
     const text = await session.prompt(message, {
@@ -180,7 +209,7 @@ async function chatStream({ settings, history, message, image, onChunk, onProgre
     });
     return text || full;
   } finally {
-    await context.dispose().catch(() => {});
+    _inFlight.delete(model);
   }
 }
 
