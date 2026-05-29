@@ -39,6 +39,18 @@ jobs:
           echo "node-llama-cpp version: ${VER}"
           npm install --no-save --force "@node-llama-cpp/mac-x64@${VER}"
 
+      # Pre-download the compact embedded chat model so it ships *inside* the
+      # .dmg (electron-builder bundles build/models/*.gguf via extraResources).
+      # The user then has a working built-in engine with no first-run download.
+      - name: Fetch bundled chat model
+        run: |
+          mkdir -p build/models
+          URL=$(node -e "console.log(require('./src/settings').DEFAULTS.embedded.chat.url)" 2>/dev/null || echo "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf")
+          FILE=$(node -e "console.log(require('./src/settings').DEFAULTS.embedded.chat.file)" 2>/dev/null || echo "Llama-3.2-1B-Instruct-Q4_K_M.gguf")
+          echo "Downloading ${FILE}"
+          curl -L --fail --retry 3 -o "build/models/${FILE}" "${URL}"
+          ls -lh build/models
+
       - name: Build .dmg (arm64 + x64)
         env:
           # Unsigned build — don't let electron-builder hunt for a signing identity.

@@ -23,6 +23,20 @@ function modelDir() {
   return dir;
 }
 
+// Path to a model shipped *inside* the app bundle (via electron-builder
+// extraResources → Contents/Resources/models). Returns null when not packaged
+// or when the file isn't bundled, in which case we fall back to the userData
+// download path.
+function bundledModelPath(fileName) {
+  try {
+    if (!process.resourcesPath) return null;
+    const p = path.join(process.resourcesPath, 'models', fileName);
+    return fs.existsSync(p) ? p : null;
+  } catch {
+    return null;
+  }
+}
+
 async function init() {
   if (_initPromise) return _initPromise;
   _initPromise = (async () => {
@@ -67,7 +81,8 @@ function supportsVision() {
 
 function modelPathFor(settings, vision) {
   const cfg = vision ? settings.embedded.vision : settings.embedded.chat;
-  return path.join(modelDir(), cfg.file);
+  // Prefer a model bundled in the app (no download needed); else the userData copy.
+  return bundledModelPath(cfg.file) || path.join(modelDir(), cfg.file);
 }
 
 // Once we've seen the chat model on disk we cache it: a downloaded model never

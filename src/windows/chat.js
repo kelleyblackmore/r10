@@ -104,8 +104,8 @@ function showSetupBanner() {
   const b = document.createElement('div');
   b.className = 'bubble setup';
   b.textContent =
-    "I run on a built-in brain that needs a one-time download (about 5 GB) before we can chat. " +
-    "It's saved on your Mac and reused every time after — you only do this once.";
+    "I run on a built-in brain. The installed app ships with it, but this copy needs a small " +
+    "one-time download (under 1 GB) before we can chat. It's saved on your Mac and reused every time after.";
   const btn = document.createElement('button');
   btn.className = 'primary';
   btn.textContent = 'Download now';

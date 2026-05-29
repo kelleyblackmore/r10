@@ -3,3 +3,6 @@ release/
 dist/
 *.log
 .DS_Store
+
+# Bundled GGUF model(s) — fetched at build time, too large to commit.
+build/models/*.gguf

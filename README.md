@@ -11,7 +11,7 @@ A cute, animated AI droid companion for your Mac desktop — a little R2-style a
 
 r10 has **three** backends. Two run fully locally; the third talks to any hosted/OpenAI-compatible model server (great for work deployments). In `Auto` mode r10 picks between the two local ones automatically:
 
-1. **Built-in (embedded)** — an in-process engine ([`node-llama-cpp`](https://github.com/withcatai/node-llama-cpp)) that runs a `.gguf` model directly inside r10. Works out of the box: the first time you open the chat, r10 shows a one-time **"Download now"** prompt for a balanced ~8B chat model (~5 GB, with a progress bar). The model is saved to disk and **reused on every launch** — it is *not* re-downloaded each time you start the app, and r10 won't try to chat until it's ready.
+1. **Built-in (embedded)** — an in-process engine ([`node-llama-cpp`](https://github.com/withcatai/node-llama-cpp)) that runs a `.gguf` model directly inside r10. The macOS installer **ships with a compact ~1B chat model bundled inside the `.dmg`** (≈0.8 GB), so the built-in engine works the moment you install — **no first-run download**. (If you run from source in dev, the model is downloaded once to your user data folder instead and reused thereafter.)
 2. **Ollama (preferred when running)** — if you have [Ollama](https://ollama.com) running, r10 uses it automatically for better/larger models and for **screen-watching** (vision). Local vision runs through Ollama (`ollama pull llava`).
 3. **API (OpenAI-compatible)** — point r10 at the public OpenAI API or **your own/work model gateway** (anything exposing `/v1/chat/completions`: Azure OpenAI gateways, vLLM, LM Studio, llama.cpp server, internal corporate endpoints…). It's pure HTTP, so it needs **no native engine and works identically on macOS and Windows**. Screen-watching (👁) works too if the configured model accepts images. Set it in ⚙ Settings → **API**: URL, key, and model name.
 
@@ -54,6 +54,14 @@ npm run dist
 ```
 
 The installer lands in `release/` (e.g. `r10-0.1.0-arm64.dmg`). Open the `.dmg`, drag **r10** to Applications, then launch it from there.
+
+> **Bundling the built-in model locally:** the `.dmg` ships the embedded chat model from `build/models/*.gguf` (via electron-builder `extraResources`). CI downloads it automatically; for a *local* `npm run dist` that includes the model, drop the GGUF there first:
+> ```bash
+> mkdir -p build/models
+> curl -L -o build/models/Llama-3.2-1B-Instruct-Q4_K_M.gguf \
+>   https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf
+> ```
+> If `build/models` is empty, the build still works — the app just falls back to the one-time first-run download.
 
 > **First launch on an unsigned build:** macOS Gatekeeper will warn that the app is from an unidentified developer (it isn't notarized with an Apple Developer ID). Right-click **r10.app → Open → Open**, just once, and macOS remembers it afterward.
 
@@ -149,7 +157,7 @@ The renderer talks to the main process over a small, contextIsolated `preload.js
 
 ## Troubleshooting
 
-- **Status shows "built-in · model not downloaded"** — click the **Download now** prompt in the chat (or ⚙ Settings → *Download built-in chat model*). It downloads once and is reused on every launch.
+- **Status shows "built-in · model not downloaded"** — only happens when the bundled model isn't present (e.g. running from source). Click the **Download now** prompt in the chat (or ⚙ Settings → *Download built-in chat model*). It downloads once and is reused on every launch. Installed `.dmg` builds ship the model, so they skip this entirely.
 - **Screen-watching (👁) says vision unavailable** — vision runs through Ollama: `ollama pull llava`, then set engine to Auto.
 - **API engine errors** — the status light shows the problem: *auth* means a bad/missing API key; *404* means the model name or URL is wrong; *offline* means the gateway is unreachable (check the URL and your VPN). The ⚙ Settings panel pings the endpoint and lists available models to confirm it's reachable.
 - **"Model not installed" (Ollama)** — run the `ollama pull …` command r10 shows you.

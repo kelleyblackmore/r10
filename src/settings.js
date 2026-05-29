@@ -22,11 +22,14 @@ const DEFAULTS = {
   openaiModel: '', // e.g. 'gpt-4o-mini' or your work model id
   openaiVisionModel: '', // optional; falls back to openaiModel for screen-watching
 
-  // Embedded engine (node-llama-cpp) — balanced ~7-8B GGUF models, auto-downloaded on first use.
+  // Embedded engine (node-llama-cpp). The chat model is a compact ~1B GGUF that
+  // is small enough to ship *inside* the macOS .dmg (see build/models +
+  // electron-builder extraResources), so there's no first-run download. If it
+  // isn't bundled (e.g. dev), it's downloaded to userData on first use instead.
   embedded: {
     chat: {
-      file: 'Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf',
-      url: 'https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/resolve/main/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf',
+      file: 'Llama-3.2-1B-Instruct-Q4_K_M.gguf',
+      url: 'https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf',
     },
     vision: {
       file: 'llava-v1.6-mistral-7b.Q4_K_M.gguf',
