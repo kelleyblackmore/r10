@@ -29,12 +29,19 @@
             <option value="auto">Auto — use Ollama if running, else built-in</option>
             <option value="embedded">Built-in (embedded) only</option>
             <option value="ollama">Ollama only</option>
+            <option value="openai">API (OpenAI-compatible) only</option>
           </select>
         </label>
         <div id="engineHint" class="hint"></div>
         <div class="settings-actions">
           <button id="dlChat">Download built-in chat model</button>
         </div>
+        <hr class="sep" />
+        <label>API URL<input id="setOpenaiUrl" type="text" placeholder="https://api.openai.com/v1" /></label>
+        <label>API key<input id="setOpenaiKey" type="password" placeholder="sk-… (or your work token)" /></label>
+        <label>API model<input id="setOpenaiModel" type="text" placeholder="gpt-4o-mini" /></label>
+        <label>API vision model (optional)<input id="setOpenaiVision" type="text" placeholder="defaults to API model" /></label>
+        <div id="openaiHint" class="hint"></div>
         <hr class="sep" />
         <label>Ollama URL<input id="setUrl" type="text" /></label>
         <label>Ollama chat model<input id="setChat" type="text" placeholder="llama3.2" /></label>

@@ -7,14 +7,17 @@ A cute, animated AI droid companion for your Mac desktop — a little R2-style a
 - **On-demand screen awareness** — tap 👁 and r10 captures your screen *once* and helps with what it sees. Nothing is watched in the background.
 - **100% local AI** — runs entirely on your Mac. No cloud, no API keys, your screen never leaves the machine.
 
-## AI engine: built-in + Ollama
+## AI engine: built-in + Ollama + API
 
-r10 has **two** local backends and picks automatically (`Auto` mode):
+r10 has **three** backends. Two run fully locally; the third talks to any hosted/OpenAI-compatible model server (great for work deployments). In `Auto` mode r10 picks between the two local ones automatically:
 
 1. **Built-in (embedded)** — an in-process engine ([`node-llama-cpp`](https://github.com/withcatai/node-llama-cpp)) that runs a `.gguf` model directly inside r10. Works out of the box: the first time you open the chat, r10 shows a one-time **"Download now"** prompt for a balanced ~8B chat model (~5 GB, with a progress bar). The model is saved to disk and **reused on every launch** — it is *not* re-downloaded each time you start the app, and r10 won't try to chat until it's ready.
-2. **Ollama (preferred when running)** — if you have [Ollama](https://ollama.com) running, r10 uses it automatically for better/larger models and for **screen-watching** (vision). Vision currently runs through Ollama (`ollama pull llava`).
+2. **Ollama (preferred when running)** — if you have [Ollama](https://ollama.com) running, r10 uses it automatically for better/larger models and for **screen-watching** (vision). Local vision runs through Ollama (`ollama pull llava`).
+3. **API (OpenAI-compatible)** — point r10 at the public OpenAI API or **your own/work model gateway** (anything exposing `/v1/chat/completions`: Azure OpenAI gateways, vLLM, LM Studio, llama.cpp server, internal corporate endpoints…). It's pure HTTP, so it needs **no native engine and works identically on macOS and Windows**. Screen-watching (👁) works too if the configured model accepts images. Set it in ⚙ Settings → **API**: URL, key, and model name.
 
-Pick the engine explicitly in ⚙ Settings (Auto / Built-in only / Ollama only).
+Pick the engine explicitly in ⚙ Settings (Auto / Built-in only / Ollama only / API only).
+
+> **Deploying at work / on Windows:** select **API (OpenAI-compatible) only**, set the **API URL** to your gateway (e.g. `https://your-gateway/v1`), paste your **API key/token**, and enter the **model** name. The embedded GGUF engine isn't needed in this mode — which is exactly why the Windows build relies on it.
 
 ### Optional: Ollama for best quality + screen-watching
 
@@ -68,6 +71,21 @@ Build for both Apple Silicon and Intel with `npm run dist` (default), or a singl
 
 > **Universal (single fat) `.dmg`:** not used here — `@electron/universal`'s ASAR merge currently chokes on the engine's unpacked native binaries ("pattern is too long"). Two per-arch `.dmg`s avoid that and keep each download smaller.
 
+## Build a Windows app (.exe installer)
+
+The Windows build is intended to run against the **API (OpenAI-compatible)** engine — your work/hosted model gateway — so it doesn't need the native GGUF engine at all. Screen capture and chat are fully cross-platform.
+
+```bash
+npm install
+npm run dist:win        # produces an NSIS installer in release/
+```
+
+This yields `release/r10 Setup <version>.exe` (x64). The installer lets the user pick the install location and cleans up app data on uninstall.
+
+> **Build host:** electron-builder *can* cross-build a Windows installer from macOS, but native modules and Windows code signing make a real Windows machine — or a CI **`windows-latest`** runner running `npm ci && npm run dist:win` — the reliable path. The build is unsigned, so on first launch Windows SmartScreen shows a "Windows protected your PC" warning: click **More info → Run anyway** once.
+
+> **Embedded engine on Windows:** not bundled by default — `npm install` on a non-Windows host won't fetch `@node-llama-cpp/win-x64`, and the API engine doesn't need it. If you *do* want the built-in GGUF engine on Windows, build on Windows (or `npm install --no-save --force @node-llama-cpp/win-x64` first) and select an engine other than API. Otherwise r10 reports the built-in engine as unavailable and you use **API** (or Ollama).
+
 ## Start / stop / uninstall
 
 | Action | How |
@@ -83,8 +101,9 @@ r10 runs as a menu-bar-style accessory app (no Dock icon) so it stays out of you
 
 Open chat → ⚙ Settings:
 
-- **AI engine** — Auto (default) / Built-in only / Ollama only
+- **AI engine** — Auto (default) / Built-in only / Ollama only / API only
 - **Built-in model downloads** — buttons to pre-fetch the embedded chat / vision models
+- **API URL / key / model / vision model** — for the OpenAI-compatible engine (work/hosted gateway). The settings panel pings the endpoint to confirm it's reachable.
 - **Ollama URL** — default `http://127.0.0.1:11434`
 - **Ollama chat / vision model** — defaults `llama3.2` / `llama3.2-vision`
 - **Persona** — the system prompt that gives r10 its personality
@@ -100,10 +119,11 @@ Settings + downloaded models are saved under `~/Library/Application Support/r10/
 Electron main process (src/main.js)
 ├── Droid window      → transparent, always-on-top, custom drag (src/windows/droid.*)
 ├── Chat window       → streaming chat UI + settings + download progress (src/windows/chat.*)
-├── engine.js         → auto-selects Ollama (if running) vs the embedded engine
+├── engine.js         → selects API / Ollama / embedded backend per request
 ├── llama.js          → embedded in-process engine via node-llama-cpp (.gguf models)
 ├── ollama.js         → streaming chat client for a local Ollama server
-├── screen.js         → on-demand screenshot via macOS `screencapture`
+├── openai.js         → streaming client for any OpenAI-compatible API (work/hosted)
+├── screen.js         → on-demand screenshot (macOS `screencapture`; desktopCapturer elsewhere)
 └── settings.js       → JSON settings in userData
 ```
 
@@ -113,5 +133,6 @@ The renderer talks to the main process over a small, contextIsolated `preload.js
 
 - **Status shows "built-in · model not downloaded"** — click the **Download now** prompt in the chat (or ⚙ Settings → *Download built-in chat model*). It downloads once and is reused on every launch.
 - **Screen-watching (👁) says vision unavailable** — vision runs through Ollama: `ollama pull llava`, then set engine to Auto.
+- **API engine errors** — the status light shows the problem: *auth* means a bad/missing API key; *404* means the model name or URL is wrong; *offline* means the gateway is unreachable (check the URL and your VPN). The ⚙ Settings panel pings the endpoint and lists available models to confirm it's reachable.
 - **"Model not installed" (Ollama)** — run the `ollama pull …` command r10 shows you.
 - **👁 fails to capture** — grant Screen Recording permission (System Settings → Privacy & Security), then retry.

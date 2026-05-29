@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('r10', {
   getSettings: () => ipcRenderer.invoke('settings:get'),
   setSettings: (p) => ipcRenderer.invoke('settings:set', p),
   listModels: () => ipcRenderer.invoke('ollama:models'),
+  listApiModels: () => ipcRenderer.invoke('openai:models'),
   engineStatus: () => ipcRenderer.invoke('engine:status'),
   ensureModel: (vision) => ipcRenderer.invoke('model:ensure', { vision }),
   onProgress: (cb) => ipcRenderer.on('model:progress', (_e, p) => cb(p)),

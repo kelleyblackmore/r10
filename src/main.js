@@ -4,6 +4,7 @@ const { app, BrowserWindow, ipcMain, screen, shell } = require('electron');
 const path = require('path');
 const settings = require('./settings');
 const ollama = require('./ollama');
+const openai = require('./openai');
 const engine = require('./engine');
 const llama = require('./llama');
 const { captureScreenBase64 } = require('./screen');
@@ -123,6 +124,13 @@ ipcMain.handle('settings:set', (_e, partial) => settings.save(partial));
 ipcMain.handle('ollama:models', async () => {
   try {
     return { ok: true, models: await ollama.listModels(settings.load()) };
+  } catch (err) {
+    return { ok: false, error: err.message, kind: err.kind };
+  }
+});
+ipcMain.handle('openai:models', async () => {
+  try {
+    return { ok: true, models: await openai.listModels(settings.load()) };
   } catch (err) {
     return { ok: false, error: err.message, kind: err.kind };
   }

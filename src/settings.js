@@ -7,12 +7,20 @@ const path = require('path');
 
 const DEFAULTS = {
   // Backend selection: 'auto' prefers a running Ollama, else uses the embedded engine.
-  engine: 'auto', // 'auto' | 'embedded' | 'ollama'
+  engine: 'auto', // 'auto' | 'embedded' | 'ollama' | 'openai'
 
   // Ollama (used when running / when engine='ollama')
   ollamaUrl: 'http://127.0.0.1:11434',
   chatModel: 'llama3.2',
   visionModel: 'llama3.2-vision',
+
+  // OpenAI-compatible API (used when engine='openai'). Point this at the public
+  // OpenAI API or any compatible gateway (work model server, vLLM, LM Studio…).
+  // This backend is pure HTTP, so it works identically on macOS and Windows.
+  openaiUrl: 'https://api.openai.com/v1',
+  openaiKey: '',
+  openaiModel: '', // e.g. 'gpt-4o-mini' or your work model id
+  openaiVisionModel: '', // optional; falls back to openaiModel for screen-watching
 
   // Embedded engine (node-llama-cpp) — balanced ~7-8B GGUF models, auto-downloaded on first use.
   embedded: {

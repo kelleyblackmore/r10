@@ -7,7 +7,8 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --mac"
+    "dist": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
   },
   "dependencies": {
     "node-llama-cpp": "^3.0.0"
@@ -46,6 +47,23 @@
         "NSScreenCaptureUsageDescription": "r10 captures a screenshot only when you ask it to look at your screen, so it can help with what you are doing.",
         "LSUIElement": true
       }
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": true
     }
   }
 }

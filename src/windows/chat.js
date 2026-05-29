@@ -65,7 +65,13 @@ async function refreshStatus() {
     return;
   }
   const s = res.status;
-  if (s.active === 'ollama') {
+  if (s.active === 'openai') {
+    if (s.openai && s.openai.configured) {
+      setLight('ready', 'API', 'Ready · using the API model "' + s.openai.model + '" at ' + (s.openai.url || 'the configured URL') + '.');
+    } else {
+      setLight('warn', 'API setup', 'API engine selected but not configured — open Settings (⚙) and enter the API URL and model.');
+    }
+  } else if (s.active === 'ollama') {
     setLight('ready', 'Ollama', 'Ready · using Ollama (' + (s.ollama.models.join(', ') || 'no models') + ')');
   } else if (!s.embedded.available) {
     setLight('err', 'built-in', 'Built-in engine could not load on this Mac. Open Settings and switch to Ollama.');
@@ -364,6 +370,10 @@ const settingsEl = $('settings');
 async function loadSettingsForm() {
   const s = await window.r10.getSettings();
   $('setEngine').value = s.engine || 'auto';
+  $('setOpenaiUrl').value = s.openaiUrl || '';
+  $('setOpenaiKey').value = s.openaiKey || '';
+  $('setOpenaiModel').value = s.openaiModel || '';
+  $('setOpenaiVision').value = s.openaiVisionModel || '';
   $('setUrl').value = s.ollamaUrl;
   $('setChat').value = s.chatModel;
   $('setVision').value = s.visionModel;
@@ -383,11 +393,32 @@ async function refreshSettingsHints() {
   $('modelHint').textContent = models.ok
     ? 'Ollama models: ' + (models.models.join(', ') || '(none)')
     : 'Ollama offline: ' + models.error;
+
+  // API hint: confirm the endpoint is reachable and the key works.
+  const hintEl = $('openaiHint');
+  if (!$('setOpenaiUrl').value.trim() || !$('setOpenaiModel').value.trim()) {
+    hintEl.textContent = 'Enter an API URL and model to use a hosted/work model (works on macOS & Windows).';
+  } else {
+    hintEl.textContent = 'Checking API…';
+    const api = await window.r10.listApiModels();
+    if (api.ok) {
+      const has = api.models.includes($('setOpenaiModel').value.trim());
+      hintEl.textContent =
+        'API reachable ✓ — ' + api.models.length + ' model(s) available' +
+        (api.models.length && !has ? ` (note: "${$('setOpenaiModel').value.trim()}" not in the list — it may still work)` : '') + '.';
+    } else {
+      hintEl.textContent = 'API check: ' + api.error;
+    }
+  }
 }
 
 async function persistSettings() {
   await window.r10.setSettings({
     engine: $('setEngine').value,
+    openaiUrl: $('setOpenaiUrl').value.trim(),
+    openaiKey: $('setOpenaiKey').value.trim(),
+    openaiModel: $('setOpenaiModel').value.trim(),
+    openaiVisionModel: $('setOpenaiVision').value.trim(),
     ollamaUrl: $('setUrl').value.trim(),
     chatModel: $('setChat').value.trim(),
     visionModel: $('setVision').value.trim(),
@@ -404,10 +435,11 @@ function persistDebounced() {
 }
 
 // Selects/blur-style changes save immediately; free-text saves as you type (debounced).
+const TEXT_FIELDS = ['setUrl', 'setChat', 'setVision', 'setOpenaiUrl', 'setOpenaiKey', 'setOpenaiModel', 'setOpenaiVision'];
 $('setEngine').addEventListener('change', persistSettings);
-['setUrl', 'setChat', 'setVision'].forEach((id) => $(id).addEventListener('change', persistSettings));
+TEXT_FIELDS.forEach((id) => $(id).addEventListener('change', persistSettings));
 $('setPrompt').addEventListener('change', persistSettings);
-['setUrl', 'setChat', 'setVision', 'setPrompt'].forEach((id) => $(id).addEventListener('input', persistDebounced));
+[...TEXT_FIELDS, 'setPrompt'].forEach((id) => $(id).addEventListener('input', persistDebounced));
 
 function openSettings() {
   loadSettingsForm();

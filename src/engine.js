@@ -6,6 +6,7 @@
 
 const ollama = require('./ollama');
 const llama = require('./llama');
+const openai = require('./openai');
 
 async function ollamaStatus(settings) {
   try {
@@ -27,6 +28,12 @@ function hasModel(models, name) {
 async function pick(settings, hasImage) {
   const mode = settings.engine || 'auto';
 
+  if (mode === 'openai') {
+    if (!openai.configured(settings)) {
+      return { error: 'The API engine needs a URL and model. Open ⚙ Settings → API and fill them in.' };
+    }
+    return { backend: 'openai' };
+  }
   if (mode === 'ollama') {
     return { backend: 'ollama' };
   }
@@ -59,6 +66,9 @@ async function chatStream(opts) {
     err.kind = 'config';
     throw err;
   }
+  if (choice.backend === 'openai') {
+    return { backend: 'openai', text: await openai.chatStream(opts) };
+  }
   if (choice.backend === 'ollama') {
     return { backend: 'ollama', text: await ollama.chatStream(opts) };
   }
@@ -75,13 +85,30 @@ async function status(settings) {
     chatReady: llama.isModelReady(settings, false),
     visionReady: llama.isModelReady(settings, true),
   };
+  const openaiCfg = openai.configured(settings);
   let active;
   if (mode === 'ollama') active = 'ollama';
   else if (mode === 'embedded') active = 'embedded';
+  else if (mode === 'openai') active = 'openai';
   else active = os.up && hasModel(os.models, settings.chatModel) ? 'ollama' : 'embedded';
-  // Can r10 actually look at the screen right now? (Ollama vision model present, or embedded vision.)
-  const visionAvailable = (os.up && hasModel(os.models, settings.visionModel)) || llama.supportsVision();
-  return { mode, active, ollama: os, embedded, visionAvailable, visionModel: settings.visionModel };
+  // Can r10 actually look at the screen right now?
+  //  - API backend: assume the endpoint accepts images (best effort) once configured.
+  //  - otherwise: an Ollama vision model is present, or the embedded engine supports vision.
+  const visionAvailable =
+    mode === 'openai'
+      ? openaiCfg
+      : (os.up && hasModel(os.models, settings.visionModel)) || llama.supportsVision();
+  const visionModelHint =
+    mode === 'openai' ? settings.openaiVisionModel || settings.openaiModel : settings.visionModel;
+  return {
+    mode,
+    active,
+    ollama: os,
+    embedded,
+    openai: { configured: openaiCfg, model: settings.openaiModel || '', url: settings.openaiUrl || '' },
+    visionAvailable,
+    visionModel: visionModelHint,
+  };
 }
 
 module.exports = { chatStream, status, pick };
