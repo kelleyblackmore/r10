@@ -63,7 +63,15 @@ The installer lands in `release/` (e.g. `r10-0.1.0-arm64.dmg`). Open the `.dmg`,
 > ```
 > If `build/models` is empty, the build still works — the app just falls back to the one-time first-run download.
 
-> **First launch on an unsigned build:** macOS Gatekeeper will warn that the app is from an unidentified developer (it isn't notarized with an Apple Developer ID). Right-click **r10.app → Open → Open**, just once, and macOS remembers it afterward.
+> **First launch on an unsigned build:** because r10 isn't signed/notarized with an Apple Developer ID, Gatekeeper shows *"Apple could not verify 'r10' is free of malware…"*. This is expected for unsigned apps — not an actual malware finding. Two ways to open it:
+>
+> - **Terminal (quickest):** strip the quarantine flag, then open normally:
+>   ```bash
+>   xattr -dr com.apple.quarantine /Applications/r10.app
+>   ```
+> - **No terminal:** double-click r10 → **Done**, then **System Settings → Privacy & Security**, scroll to *"r10 was blocked…"* → **Open Anyway** → confirm with Touch ID/password. macOS remembers it afterward.
+>
+> (On macOS Sequoia and later, Apple removed the old right-click → **Open** shortcut — you must use one of the two methods above.)
 
 Build for both Apple Silicon and Intel with `npm run dist` (default), or a single arch with `npx electron-builder --mac dmg --arm64` (Apple Silicon) / `--x64` (Intel). You get one `.dmg` per architecture:
 
