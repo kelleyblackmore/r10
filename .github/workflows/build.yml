@@ -33,7 +33,10 @@ jobs:
       # .dmg would ship the wrong-arch native engine.
       - name: Add Intel (x64) engine binary
         run: |
-          VER=$(node -p "require('node-llama-cpp/package.json').version")
+          # Read version straight from the file — node-llama-cpp's "exports" map
+          # blocks require('node-llama-cpp/package.json').
+          VER=$(node -e "console.log(JSON.parse(require('fs').readFileSync('node_modules/node-llama-cpp/package.json','utf8')).version)")
+          echo "node-llama-cpp version: ${VER}"
           npm install --no-save --force "@node-llama-cpp/mac-x64@${VER}"
 
       - name: Build .dmg (arm64 + x64)
