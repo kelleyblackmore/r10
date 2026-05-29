@@ -53,9 +53,22 @@ jobs:
 
       - name: Build .dmg (arm64 + x64)
         env:
-          # Unsigned build — don't let electron-builder hunt for a signing identity.
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-        run: npx electron-builder --mac --publish never
+          # Apple Developer ID signing certificate (base64-encoded .p12) + its password.
+          CSC_LINK: ${{ secrets.MAC_CERT_P12_BASE64 }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          # Notarization credentials (notarytool picks these up automatically).
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -n "$CSC_LINK" ] && [ -n "$APPLE_TEAM_ID" ]; then
+            echo "Signing secrets present — building SIGNED + NOTARIZED .dmg."
+            npx electron-builder --mac --publish never -c.mac.notarize.teamId="$APPLE_TEAM_ID"
+          else
+            echo "No Apple signing secrets — building UNSIGNED .dmg (users use the xattr/Open Anyway step)."
+            export CSC_IDENTITY_AUTO_DISCOVERY=false
+            npx electron-builder --mac --publish never
+          fi
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

@@ -118,7 +118,30 @@ git push origin v0.1.0
 
 The workflow builds all three installers and attaches them to a GitHub **Release** for that tag, so anyone can download them from the repo's Releases page. You can also trigger it manually from the **Actions → Build installers → Run workflow** button (that run uploads the installers as workflow *artifacts* but doesn't create a Release).
 
-> Builds are **unsigned** (no Apple Developer ID / Windows cert), so first launch still shows the Gatekeeper / SmartScreen prompt described above.
+> Without signing secrets (below), builds are **unsigned**, so first launch shows the Gatekeeper / SmartScreen prompt described above.
+
+### Signing & notarization (removes the macOS Gatekeeper warning)
+
+The workflow signs and notarizes the macOS build automatically **once these repo secrets are set** (Settings → Secrets and variables → Actions → *New repository secret*). Until they're present, it falls back to an unsigned build — nothing breaks.
+
+| Secret | What it is |
+| --- | --- |
+| `MAC_CERT_P12_BASE64` | Your **Developer ID Application** certificate exported as `.p12`, base64-encoded |
+| `MAC_CERT_PASSWORD` | The password you set when exporting the `.p12` |
+| `APPLE_ID` | Your Apple ID email (Developer Program account) |
+| `APPLE_APP_SPECIFIC_PASSWORD` | An app-specific password from [appleid.apple.com](https://appleid.apple.com) → Sign-In & Security → App-Specific Passwords |
+| `APPLE_TEAM_ID` | Your 10-character Team ID (developer.apple.com → Membership) |
+
+**Getting the certificate (one-time):**
+
+1. In **Xcode → Settings → Accounts**, select your team → **Manage Certificates… → + → Developer ID Application**. (Or create it at developer.apple.com → Certificates.)
+2. In **Keychain Access**, find *"Developer ID Application: …"*, right-click → **Export** → save as `cert.p12` with a password.
+3. Base64-encode it for the secret:
+   ```bash
+   base64 -i cert.p12 | pbcopy   # now paste into the MAC_CERT_P12_BASE64 secret
+   ```
+
+With all five secrets set, the next tagged build produces a **signed + notarized** `.dmg` that opens with a normal double-click — no `xattr` or "Open Anyway" needed. (Windows signing is separate and not configured; the `.exe` stays unsigned.)
 
 ## Start / stop / uninstall
 
