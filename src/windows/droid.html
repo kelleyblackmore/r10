@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="droid.css" />
+  </head>
+  <body>
+    <div id="bubble" class="bubble hidden"></div>
+
+    <div id="droid" class="droid idle" title="Click to chat · drag to move">
+      <svg viewBox="0 0 120 150" width="120" height="150" xmlns="http://www.w3.org/2000/svg">
+        <!-- legs -->
+        <rect x="24" y="96" width="14" height="44" rx="6" class="leg" />
+        <rect x="82" y="96" width="14" height="44" rx="6" class="leg" />
+        <rect x="20" y="134" width="22" height="12" rx="5" class="foot" />
+        <rect x="78" y="134" width="22" height="12" rx="5" class="foot" />
+
+        <!-- body -->
+        <rect x="32" y="52" width="56" height="62" rx="14" class="body" />
+        <rect x="32" y="52" width="56" height="18" rx="11" class="body-shine" />
+        <!-- red accent band -->
+        <rect x="32" y="72" width="56" height="5" class="accent" />
+        <!-- control panel -->
+        <rect x="42" y="85" width="36" height="23" rx="4" class="panel" />
+        <circle cx="50" cy="92" r="2.8" class="light l1" />
+        <circle cx="60" cy="92" r="2.8" class="light l2" />
+        <circle cx="70" cy="92" r="2.8" class="light l3" />
+        <rect x="47" y="100" width="26" height="4" rx="2" class="light l4" />
+
+        <!-- dome -->
+        <path d="M30 54 A30 30 0 0 1 90 54 Z" class="dome" />
+        <path d="M34 52 A26 26 0 0 1 86 52" class="dome-shine" fill="none" />
+
+        <!-- big eye / lens -->
+        <circle cx="60" cy="40" r="11" class="eye-ring" />
+        <circle id="eye" cx="60" cy="40" r="7" class="eye" />
+        <circle cx="57" cy="37" r="2.2" class="eye-glint" />
+
+        <!-- antenna -->
+        <line x1="60" y1="22" x2="60" y2="8" class="antenna" />
+        <circle cx="60" cy="6" r="3.5" class="antenna-tip" />
+      </svg>
+    </div>
+
+    <script src="droid.js"></script>
+  </body>
+</html>

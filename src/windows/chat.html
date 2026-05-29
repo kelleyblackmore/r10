@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="chat.css" />
+  </head>
+  <body>
+    <div class="window">
+      <header class="titlebar">
+        <span class="title">r10</span>
+        <span id="status" class="status">●</span>
+        <span class="spacer"></span>
+        <button id="newChatBtn" class="icon-btn" title="New chat (clear conversation)">↺</button>
+        <button id="settingsBtn" class="icon-btn" title="Settings">⚙</button>
+        <button id="hideBtn" class="icon-btn" title="Hide">—</button>
+        <button id="quitBtn" class="icon-btn" title="Quit r10">✕</button>
+      </header>
+
+      <div id="messages" class="messages">
+        <div class="msg bot">
+          <div class="bubble">Beep boop! I'm r10. Ask me anything, or tap 👁 and I'll take a look at your screen.</div>
+        </div>
+      </div>
+
+      <div id="settings" class="settings hidden">
+        <h3>Settings</h3>
+        <label>AI engine
+          <select id="setEngine">
+            <option value="auto">Auto — use Ollama if running, else built-in</option>
+            <option value="embedded">Built-in (embedded) only</option>
+            <option value="ollama">Ollama only</option>
+          </select>
+        </label>
+        <div id="engineHint" class="hint"></div>
+        <div class="settings-actions">
+          <button id="dlChat">Download built-in chat model</button>
+        </div>
+        <hr class="sep" />
+        <label>Ollama URL<input id="setUrl" type="text" /></label>
+        <label>Ollama chat model<input id="setChat" type="text" placeholder="llama3.2" /></label>
+        <label>Ollama vision model<input id="setVision" type="text" placeholder="llama3.2-vision" /></label>
+        <div id="modelHint" class="hint"></div>
+        <label>Persona / system prompt<textarea id="setPrompt" rows="4"></textarea></label>
+        <div class="settings-actions">
+          <button id="saveSettings" class="primary">Done</button>
+        </div>
+      </div>
+
+      <footer class="composer">
+        <button id="lookBtn" class="icon-btn look" title="Look at my screen">👁</button>
+        <textarea id="input" rows="1" placeholder="Talk to r10…"></textarea>
+        <button id="sendBtn" class="primary send" title="Send">➤</button>
+      </footer>
+    </div>
+    <script src="chat.js"></script>
+  </body>
+</html>

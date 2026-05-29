@@ -1,0 +1,51 @@
+{
+  "name": "r10",
+  "version": "0.1.0",
+  "description": "r10 — a cute animated AI droid companion for your Mac desktop, powered by local Ollama.",
+  "author": "kkelley",
+  "license": "MIT",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac"
+  },
+  "dependencies": {
+    "node-llama-cpp": "^3.0.0"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.kkelley.r10",
+    "productName": "r10",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "**/node_modules/node-llama-cpp/**",
+      "**/node_modules/@node-llama-cpp/**"
+    ],
+    "mac": {
+      "icon": "build/icon.icns",
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "extendInfo": {
+        "NSScreenCaptureUsageDescription": "r10 captures a screenshot only when you ask it to look at your screen, so it can help with what you are doing.",
+        "LSUIElement": true
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- rounded-square backdrop -->
+  <rect width="1024" height="1024" rx="228" ry="228" fill="#15151a"/>
+  <!-- antenna -->
+  <rect x="497" y="150" width="30" height="135" rx="15" fill="#d9dee4"/>
+  <circle cx="512" cy="150" r="42" fill="#e11d2a"/>
+  <!-- white dome / head -->
+  <circle cx="512" cy="566" r="300" fill="#ffffff" stroke="#0a0a0a" stroke-width="16"/>
+  <!-- black eye ring with red rim -->
+  <circle cx="512" cy="544" r="174" fill="#0a0a0a"/>
+  <circle cx="512" cy="544" r="174" fill="none" stroke="#e11d2a" stroke-width="14"/>
+  <!-- red eye -->
+  <circle cx="512" cy="544" r="120" fill="#e11d2a"/>
+  <!-- glint -->
+  <circle cx="468" cy="500" r="34" fill="#ffffff" fill-opacity="0.9"/>
+</svg>

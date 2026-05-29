@@ -1,0 +1,127 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
+}
+
+.droid {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  cursor: grab;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+  animation: bob 3.2s ease-in-out infinite;
+}
+.droid:active { cursor: grabbing; }
+
+@keyframes bob {
+  0%, 100% { transform: translateX(-50%) translateY(0) rotate(0deg); }
+  50% { transform: translateX(-50%) translateY(-5px) rotate(-1.2deg); }
+}
+
+/* ---- parts ---- white / red / black professional palette ---- */
+.body { fill: #ffffff; stroke: #141414; stroke-width: 2; }
+.body-shine { fill: #ffffff; opacity: 0.6; }
+.dome { fill: #f4f5f7; stroke: #141414; stroke-width: 2; }
+.dome-shine { stroke: #ffffff; stroke-width: 2; opacity: 0.7; }
+.leg { fill: #1c1c1e; }
+.foot { fill: #000000; }
+
+.accent { fill: #d61f2b; }
+.panel { fill: #1c1c1e; }
+
+.eye-ring { fill: #0a0a0a; stroke: #d61f2b; stroke-width: 1.5; }
+.eye { fill: #e11d2a; transition: fill 0.3s; }
+.eye-glint { fill: #ffffff; opacity: 0.85; }
+.antenna { stroke: #1c1c1e; stroke-width: 2; }
+.antenna-tip { fill: #d61f2b; }
+
+.light { fill: #5a5a5e; }
+.l1 { fill: #e11d2a; }
+.l2 { fill: #f4f5f7; }
+.l3 { fill: #e11d2a; }
+.l4 { fill: #d61f2b; }
+
+/* eye blink */
+#eye { animation: blink 5s infinite; transform-origin: 60px 40px; }
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.12); }
+}
+
+/* antenna tip pulse */
+.antenna-tip { animation: pulse 2.4s ease-in-out infinite; }
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* panel lights twinkle */
+.light { animation: twinkle 1.8s steps(1) infinite; }
+.l2 { animation-delay: 0.3s; }
+.l3 { animation-delay: 0.6s; }
+.l4 { animation-delay: 0.9s; }
+@keyframes twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* ---- states ---- */
+.droid.thinking { animation: spin-bob 1.1s ease-in-out infinite; }
+.droid.thinking .eye { fill: #7a0c14; animation: eye-pulse 0.7s ease-in-out infinite; }
+.droid.thinking .antenna-tip { animation: pulse 0.5s ease-in-out infinite; }
+@keyframes eye-pulse { 0%, 100% { fill: #7a0c14; } 50% { fill: #e11d2a; } }
+@keyframes spin-bob {
+  0%, 100% { transform: translateX(-50%) rotate(-6deg); }
+  50% { transform: translateX(-50%) rotate(6deg); }
+}
+
+.droid.looking .eye { fill: #ffffff; }
+.droid.looking .eye-ring { fill: #d61f2b; }
+.droid.looking { animation: lean 0.9s ease-in-out infinite; }
+@keyframes lean {
+  0%, 100% { transform: translateX(-50%) translateY(0) scale(1); }
+  50% { transform: translateX(-50%) translateY(-2px) scale(1.05); }
+}
+
+.droid.talking .eye { fill: #e11d2a; }
+.droid.talking { animation: nod 0.5s ease-in-out infinite; }
+@keyframes nod {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-3px); }
+}
+
+/* ---- speech bubble ---- */
+.bubble {
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  transform: translateX(-50%);
+  max-width: 150px;
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 11px;
+  line-height: 1.35;
+  padding: 7px 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  opacity: 1;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: 5;
+}
+.bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #ffffff;
+  border-bottom: 0;
+}
+.bubble.hidden { opacity: 0; }
