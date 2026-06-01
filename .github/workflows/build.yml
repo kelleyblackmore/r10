@@ -66,6 +66,12 @@ jobs:
             npx electron-builder --mac --publish never -c.mac.notarize.teamId="$APPLE_TEAM_ID"
           else
             echo "No Apple signing secrets — building UNSIGNED .dmg (users use the xattr/Open Anyway step)."
+            # When the secrets are absent, GitHub still *defines* these env vars
+            # as empty strings. An empty CSC_LINK makes electron-builder try to
+            # load a cert from an empty path (it resolves to the cwd) and fail
+            # with "<workspace> not a file". Unset them so the build is truly
+            # unsigned.
+            unset CSC_LINK CSC_KEY_PASSWORD
             export CSC_IDENTITY_AUTO_DISCOVERY=false
             npx electron-builder --mac --publish never
           fi
