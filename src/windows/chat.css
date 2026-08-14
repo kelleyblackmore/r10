@@ -192,6 +192,14 @@ html, body {
 .look svg { width: 18px; height: 18px; display: block; }
 .look:hover { background: #e6e6e6; }
 .look.armed { background: #d61f2b; color: #fff; border-color: #d61f2b; }
+/* regenerate — quiet composer button, shown only after a completed reply */
+.regen { background: #f2f2f2; color: #6b7280; width: 34px; height: 36px; border: 1px solid #e2e2e2; border-radius: 7px; }
+.regen svg { width: 15px; height: 15px; display: block; }
+.regen:hover { background: #e6e6e6; color: #374151; }
+/* stop — replaces send while a reply is streaming */
+.stop { background: #1c1c1e; }
+.stop:hover { background: #000; }
+.stop svg { width: 13px; height: 13px; }
 
 /* settings */
 .settings {

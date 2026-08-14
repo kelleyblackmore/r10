@@ -16,6 +16,11 @@ contextBridge.exposeInMainWorld('r10', {
   stop: () => ipcRenderer.send('chat:stop'),
   onChunk: (cb) => ipcRenderer.on('chat:chunk', (_e, c) => cb(c)),
 
+  // persisted conversation + tray-driven settings open
+  loadHistory: () => ipcRenderer.invoke('history:load'),
+  saveHistory: (h) => ipcRenderer.send('history:save', h),
+  onOpenSettings: (cb) => ipcRenderer.on('chat:open-settings', () => cb()),
+
   capture: () => ipcRenderer.invoke('screen:capture'),
   getSettings: () => ipcRenderer.invoke('settings:get'),
   setSettings: (p) => ipcRenderer.invoke('settings:set', p),

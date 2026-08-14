@@ -279,7 +279,6 @@ function newChat() {
   convGen += 1; // any in-flight send from the old gen will discard its result
   window.r10.stop(); // abort a streaming reply in the main process
   chunkHandler = null;
-  streaming = false;
   history = [];
   turnNodes = [];
   trimMarker = null;
@@ -289,10 +288,35 @@ function newChat() {
   $('lookBtn').classList.remove('armed');
   inputEl.placeholder = 'Talk to r10…';
   messagesEl.innerHTML = GREETING_HTML;
+  setStreamingUI(false); // restore Send button, hide Stop/Regenerate
+  window.r10.saveHistory([]); // forget the persisted conversation
   refreshStatus(); // re-shows the download banner if the model still isn't ready
   inputEl.focus();
 }
 $('newChatBtn').addEventListener('click', newChat);
+
+// ---- streaming UI (Send <-> Stop) + regenerate availability ----
+const sendBtn = $('sendBtn');
+const stopBtn = $('stopBtn');
+const regenBtn = $('regenBtn');
+
+function setStreamingUI(on) {
+  streaming = on;
+  sendBtn.classList.toggle('hidden', on);
+  stopBtn.classList.toggle('hidden', !on);
+  if (on) regenBtn.classList.add('hidden');
+  else updateRegen();
+}
+
+// Regenerate is offered only when the last turn is a completed assistant reply.
+function updateRegen() {
+  const canRegen = !streaming && history.length > 0 && history[history.length - 1].role === 'assistant';
+  regenBtn.classList.toggle('hidden', !canRegen);
+}
+
+function persistHistory() {
+  try { window.r10.saveHistory(history); } catch { /* non-fatal */ }
+}
 
 // ---- sending ----
 async function send() {
@@ -300,12 +324,17 @@ async function send() {
   if (!text || streaming) return;
   inputEl.value = '';
   autoSize();
+  await submit(text, pendingImage);
+}
 
+// Core send path, shared by the composer and by Regenerate. `image` is the
+// optional armed screenshot (base64); regenerate passes null (screenshots aren't
+// stored in history, so a regenerated reply is text-only).
+async function submit(text, image) {
   const myGen = convGen;
-  const image = pendingImage;
   addMessage('user', text, { withImage: !!image });
   const userWrap = messagesEl.lastElementChild;
-  streaming = true;
+  setStreamingUI(true);
 
   // Make sure the engine + model are ready before we try to talk. If the
   // built-in model still needs downloading, this runs it (with progress) first.
@@ -313,7 +342,7 @@ async function send() {
   if (myGen !== convGen) return; // chat was reset during prep
   if (!prep.ok) {
     addMessage('bot', prep.error, { error: true });
-    streaming = false;
+    setStreamingUI(false);
     pendingImage = null;
     $('lookBtn').classList.remove('armed');
     inputEl.placeholder = 'Talk to r10…';
@@ -334,14 +363,7 @@ async function send() {
   let gotFirst = false;
   chunkHandler = (chunk) => {
     if (myGen !== convGen) return;
-    if (!gotFirst) {
-      gotFirst = true;
-      botBubble.textContent = ''; // drop the typing indicator
-      const caret = document.createElement('span');
-      caret.className = 'cursor';
-      caret.textContent = '▍';
-      botBubble.appendChild(caret);
-    }
+    if (!gotFirst) { gotFirst = true; botBubble.textContent = ''; } // drop typing dots
     acc += chunk;
     // Plain text while streaming (fast + safe); Markdown is rendered on completion.
     botBubble.textContent = acc;
@@ -360,14 +382,22 @@ async function send() {
   pendingImage = null;
   $('lookBtn').classList.remove('armed');
   inputEl.placeholder = 'Talk to r10…';
-  streaming = false;
+  setStreamingUI(false);
 
   if (res.ok) {
     botBubble.innerHTML = renderMarkdown(res.text);
     history.push({ role: 'assistant', content: res.text });
     turnNodes.push(botWrap);
   } else if (res.aborted) {
-    botBubble.innerHTML = acc ? renderMarkdown(acc) : '(stopped)';
+    // Keep whatever streamed before Stop, and record it so the transcript,
+    // context, and regenerate stay consistent.
+    if (acc) {
+      botBubble.innerHTML = renderMarkdown(acc);
+      history.push({ role: 'assistant', content: acc });
+      turnNodes.push(botWrap);
+    } else {
+      botWrap.remove();
+    }
   } else {
     botWrap.remove();
     let msg = res.error || 'Something went wrong.';
@@ -377,7 +407,31 @@ async function send() {
     addMessage('bot', msg, { error: true, html: true });
     refreshStatus();
   }
+  updateRegen();
+  persistHistory();
 }
+
+// ---- stop / regenerate ----
+stopBtn.addEventListener('click', () => {
+  if (streaming) window.r10.stop();
+});
+
+async function regenerate() {
+  if (streaming) return;
+  if (!history.length || history[history.length - 1].role !== 'assistant') return;
+  // Drop the last assistant reply (history + DOM)…
+  history.pop();
+  const botNode = turnNodes.pop();
+  if (botNode) botNode.remove();
+  // …then the user turn that produced it, and re-send that same prompt.
+  const lastUser = history[history.length - 1];
+  if (!lastUser || lastUser.role !== 'user') { updateRegen(); persistHistory(); return; }
+  history.pop();
+  const userNode = turnNodes.pop();
+  if (userNode) userNode.remove();
+  await submit(lastUser.content, null);
+}
+regenBtn.addEventListener('click', regenerate);
 
 // ---- look button ----
 $('lookBtn').addEventListener('click', async () => {
@@ -542,6 +596,39 @@ $('dlChat').addEventListener('click', () => {
   settingsEl.classList.add('hidden');
   startDownload(false);
 });
+
+// Open Settings from the menu-bar (tray) item.
+window.r10.onOpenSettings(() => {
+  if (settingsEl.classList.contains('hidden')) openSettings();
+});
+
+// ---- restore a saved conversation on launch ----
+// Rebuild the transcript from persisted history so r10 remembers the chat across
+// restarts. Falls back to the greeting when there's nothing saved.
+async function restoreHistory() {
+  try {
+    const saved = await window.r10.loadHistory();
+    if (!Array.isArray(saved) || !saved.length) return;
+    messagesEl.innerHTML = ''; // replace the greeting
+    history = [];
+    turnNodes = [];
+    for (const turn of saved) {
+      if (turn.role === 'user') {
+        const b = addMessage('user', turn.content);
+        history.push({ role: 'user', content: turn.content });
+        turnNodes.push(b.parentElement);
+      } else if (turn.role === 'assistant') {
+        const b = addMessage('bot', '');
+        b.innerHTML = renderMarkdown(turn.content);
+        history.push({ role: 'assistant', content: turn.content });
+        turnNodes.push(b.parentElement);
+      }
+    }
+    updateRegen();
+    scrollDown();
+  } catch { /* start fresh on any restore error */ }
+}
+restoreHistory();
 
 // Check on open, then only occasionally — and never while the window is hidden,
 // since a downloaded model stays put and Ollama rarely toggles. Refresh on show.
