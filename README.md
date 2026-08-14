@@ -1,10 +1,10 @@
-# r10 🤖
+# r10
 
 A cute, animated AI droid companion for your Mac desktop — a little R2-style astromech named **r10** that floats on your screen, chats in bubbles, and can take a look at what you're doing when you ask.
 
 - **Floating animated droid** — white/red/black astromech, always-on-top, drag it anywhere. It bobs, blinks, and reacts (thinking / looking / talking).
 - **Click to chat** — a clean chat window with streaming replies.
-- **On-demand screen awareness** — tap 👁 and r10 captures your screen *once* and helps with what it sees. Nothing is watched in the background.
+- **On-demand screen awareness** — tap the eye button and r10 captures your screen *once* and helps with what it sees. Nothing is watched in the background.
 - **100% local AI** — runs entirely on your Mac. No cloud, no API keys, your screen never leaves the machine.
 
 ## AI engine: built-in + Ollama + API
@@ -13,9 +13,9 @@ r10 has **three** backends. Two run fully locally; the third talks to any hosted
 
 1. **Built-in (embedded)** — an in-process engine ([`node-llama-cpp`](https://github.com/withcatai/node-llama-cpp)) that runs a `.gguf` model directly inside r10. The macOS installer **ships with a compact ~1B chat model bundled inside the `.dmg`** (≈0.8 GB), so the built-in engine works the moment you install — **no first-run download**. (If you run from source in dev, the model is downloaded once to your user data folder instead and reused thereafter.)
 2. **Ollama (preferred when running)** — if you have [Ollama](https://ollama.com) running, r10 uses it automatically for better/larger models and for **screen-watching** (vision). Local vision runs through Ollama (`ollama pull llava`).
-3. **API (OpenAI-compatible)** — point r10 at the public OpenAI API or **your own/work model gateway** (anything exposing `/v1/chat/completions`: Azure OpenAI gateways, vLLM, LM Studio, llama.cpp server, internal corporate endpoints…). It's pure HTTP, so it needs **no native engine and works identically on macOS and Windows**. Screen-watching (👁) works too if the configured model accepts images. Set it in ⚙ Settings → **API**: URL, key, and model name.
+3. **API (OpenAI-compatible)** — point r10 at the public OpenAI API or **your own/work model gateway** (anything exposing `/v1/chat/completions`: Azure OpenAI gateways, vLLM, LM Studio, llama.cpp server, internal corporate endpoints…). It's pure HTTP, so it needs **no native engine and works identically on macOS and Windows**. Screen-watching works too if the configured model accepts images. Set it in Settings → **API**: URL, key, and model name.
 
-Pick the engine explicitly in ⚙ Settings (Auto / Built-in only / Ollama only / API only).
+Pick the engine explicitly in Settings (Auto / Built-in only / Ollama only / API only).
 
 > **Deploying at work / on Windows:** select **API (OpenAI-compatible) only**, set the **API URL** to your gateway (e.g. `https://your-gateway/v1`), paste your **API key/token**, and enter the **model** name. The embedded GGUF engine isn't needed in this mode — which is exactly why the Windows build relies on it.
 
@@ -41,11 +41,11 @@ A little droid appears in the bottom-right of your screen.
 
 - **Click** the droid → open / close the chat window.
 - **Drag** the droid → move it anywhere.
-- **👁 button** in chat → r10 captures your screen and answers about it.
-- **✕ button** in the chat title bar → quit r10.
+- **eye button** in chat → r10 captures your screen and answers about it.
+- **close button** in the chat title bar → quit r10.
 
-> First time you use 👁, macOS asks for **Screen Recording** permission
-> (System Settings → Privacy & Security → Screen Recording). Grant it and re-tap 👁.
+> First time you use the eye button, macOS asks for **Screen Recording** permission
+> (System Settings → Privacy & Security → Screen Recording). Grant it and re-tap the eye button.
 
 ## Build a double-click app (.dmg)
 
@@ -108,7 +108,7 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-The workflow builds all three installers and attaches them to a GitHub **Release** for that tag, so anyone can download them from the repo's Releases page. You can also trigger it manually from the **Actions → Build installers → Run workflow** button (that run uploads the installers as workflow *artifacts* but doesn't create a Release).
+The workflow builds both installers and attaches them to a GitHub **Release** for that tag, so anyone can download them from the repo's Releases page. You can also trigger it manually from the **Actions → Build installers → Run workflow** button (that run uploads the installers as workflow *artifacts* but doesn't create a Release).
 
 > Without signing secrets (below), builds are **unsigned**, so first launch shows the Gatekeeper / SmartScreen prompt described above.
 
@@ -140,7 +140,7 @@ With all five secrets set, the next tagged build produces a **signed + notarized
 | Action | How |
 | --- | --- |
 | **Start** | Launch r10 from Applications (or `npm start` in dev) |
-| **Stop** | Click the droid → ✕ in the chat title bar, or quit from the app |
+| **Stop** | Click the droid → the close button in the chat title bar, or quit from the app |
 | **Uninstall** | Drag **r10.app** from Applications to the Trash |
 | **Remove settings** | Delete `~/Library/Application Support/r10/` |
 
@@ -148,7 +148,7 @@ r10 runs as a menu-bar-style accessory app (no Dock icon) so it stays out of you
 
 ## Configuration
 
-Open chat → ⚙ Settings:
+Open chat → Settings:
 
 - **AI engine** — Auto (default) / Built-in only / Ollama only / API only
 - **Built-in model downloads** — buttons to pre-fetch the embedded chat / vision models
@@ -180,8 +180,8 @@ The renderer talks to the main process over a small, contextIsolated `preload.js
 
 ## Troubleshooting
 
-- **Status shows "built-in · model not downloaded"** — only happens when the bundled model isn't present (e.g. running from source). Click the **Download now** prompt in the chat (or ⚙ Settings → *Download built-in chat model*). It downloads once and is reused on every launch. Installed `.dmg` builds ship the model, so they skip this entirely.
-- **Screen-watching (👁) says vision unavailable** — vision runs through Ollama: `ollama pull llava`, then set engine to Auto.
-- **API engine errors** — the status light shows the problem: *auth* means a bad/missing API key; *404* means the model name or URL is wrong; *offline* means the gateway is unreachable (check the URL and your VPN). The ⚙ Settings panel pings the endpoint and lists available models to confirm it's reachable.
+- **Status shows "built-in · model not downloaded"** — only happens when the bundled model isn't present (e.g. running from source). Click the **Download now** prompt in the chat (or Settings → *Download built-in chat model*). It downloads once and is reused on every launch. Installed `.dmg` builds ship the model, so they skip this entirely.
+- **Screen-watching says vision unavailable** — vision runs through Ollama: `ollama pull llava`, then set engine to Auto.
+- **API engine errors** — the status light shows the problem: *auth* means a bad/missing API key; *404* means the model name or URL is wrong; *offline* means the gateway is unreachable (check the URL and your VPN). The Settings panel pings the endpoint and lists available models to confirm it's reachable.
 - **"Model not installed" (Ollama)** — run the `ollama pull …` command r10 shows you.
-- **👁 fails to capture** — grant Screen Recording permission (System Settings → Privacy & Security), then retry.
+- **the eye button fails to capture** — grant Screen Recording permission (System Settings → Privacy & Security), then retry.

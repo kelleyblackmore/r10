@@ -47,7 +47,7 @@ function configured(settings) {
 async function chatStream({ settings, history, message, image, onChunk, signal }) {
   if (!settings.openaiModel) {
     throw new OpenAIError(
-      'No API model is set. Open ⚙ Settings → API and enter a model name.',
+      'No API model is set. Open Settings → API and enter a model name.',
       'config'
     );
   }
@@ -90,13 +90,13 @@ async function chatStream({ settings, history, message, image, onChunk, signal }
     const text = await res.text().catch(() => '');
     if (res.status === 401 || res.status === 403) {
       throw new OpenAIError(
-        'The API rejected the request (auth). Check your API key in ⚙ Settings.',
+        'The API rejected the request (auth). Check your API key in Settings.',
         'auth'
       );
     }
     if (res.status === 404) {
       throw new OpenAIError(
-        `Model "${model}" or endpoint not found (404). Check the model name and API URL in ⚙ Settings.`,
+        `Model "${model}" or endpoint not found (404). Check the model name and API URL in Settings.`,
         'model-missing'
       );
     }

@@ -173,7 +173,7 @@ function droidBubble(text) {
 
 // Short astromech acknowledgements shown in the desktop bubble when r10 finishes
 // a reply (the real answer is in the chat window). Droid character, not English.
-const DONE_CHIRPS = ['bdeep! done.', 'wheee-oo ✓', 'boop— sent.', 'chk. computed.', 'vwoorp!'];
+const DONE_CHIRPS = ['bdeep! done.', 'wheee-oo.', 'boop— sent.', 'chk. computed.', 'vwoorp!'];
 const LOOK_CHIRPS = ['bdeep— scan complete.', 'wheee. i see it.', 'chk-chk. analyzed.'];
 function pickChirp(fromImage) {
   const pool = fromImage ? LOOK_CHIRPS : DONE_CHIRPS;

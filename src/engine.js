@@ -30,7 +30,7 @@ async function pick(settings, hasImage) {
 
   if (mode === 'openai') {
     if (!openai.configured(settings)) {
-      return { error: 'The API engine needs a URL and model. Open ⚙ Settings → API and fill them in.' };
+      return { error: 'The API engine needs a URL and model. Open Settings → API and fill them in.' };
     }
     return { backend: 'openai' };
   }
