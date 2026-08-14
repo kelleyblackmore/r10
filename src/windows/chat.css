@@ -78,10 +78,79 @@ html, body {
 .msg.bot .bubble { background: #fff; color: #1f2937; border-bottom-left-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
 .msg.user .bubble { background: #1c1c1e; color: #fff; border-bottom-right-radius: 4px; }
 .msg.user.with-image .bubble::before { content: "👁 looked at screen\A"; opacity: 0.8; font-size: 11px; }
-.msg .bubble .cursor { animation: caret 1s steps(1) infinite; }
+.msg .bubble .cursor { animation: caret 1s steps(1) infinite; color: #d61f2b; }
 @keyframes caret { 50% { opacity: 0; } }
 .msg.error .bubble { background: #fee2e2; color: #991b1b; }
 .msg.error a { color: #991b1b; text-decoration: underline; cursor: pointer; }
+
+/* markdown inside bot bubbles */
+.msg.bot .bubble a { color: #b01825; text-decoration: underline; cursor: pointer; }
+.msg.bot .bubble strong { font-weight: 700; }
+.msg.bot .bubble em { font-style: italic; }
+.msg.bot .bubble > div { margin: 0; }
+.msg.bot .bubble > div + div { margin-top: 6px; }
+.msg.bot .bubble ul, .msg.bot .bubble ol { margin: 4px 0 4px 18px; }
+.msg.bot .bubble li { margin: 2px 0; }
+.msg.bot .bubble code {
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  background: #f1f1f4;
+  border: 1px solid #e4e4e8;
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+.msg.bot .bubble pre.code {
+  position: relative;
+  background: #1c1c1e;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 6px 0;
+  overflow-x: auto;
+}
+.msg.bot .bubble pre.code code {
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #f4f4f5;
+  background: none;
+  border: none;
+  padding: 0;
+  white-space: pre;
+}
+.msg.bot .bubble pre.code .copy {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.msg.bot .bubble pre.code:hover .copy { opacity: 1; }
+.msg.bot .bubble pre.code .copy:hover { background: rgba(255, 255, 255, 0.28); }
+.msg.bot .bubble pre.code .copy.copied { background: #d61f2b; opacity: 1; }
+
+/* typing indicator */
+.typing { display: inline-flex; gap: 4px; align-items: center; padding: 2px 0; }
+.typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d61f2b;
+  opacity: 0.4;
+  animation: typing 1.2s ease-in-out infinite;
+}
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
 
 /* composer */
 .composer {

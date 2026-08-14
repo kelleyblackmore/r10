@@ -9,11 +9,35 @@
 
     <div id="droid" class="droid idle" title="Click to chat · drag to move">
       <svg viewBox="0 0 120 150" width="120" height="150" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="lensGlow" cx="50%" cy="42%" r="60%">
+            <stop offset="0%" stop-color="#ff5a64" />
+            <stop offset="55%" stop-color="#e11d2a" />
+            <stop offset="100%" stop-color="#7a0c14" />
+          </radialGradient>
+          <linearGradient id="bodyShade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ffffff" />
+            <stop offset="100%" stop-color="#dfe2e7" />
+          </linearGradient>
+          <linearGradient id="domeShade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ffffff" />
+            <stop offset="100%" stop-color="#e6e8ec" />
+          </linearGradient>
+        </defs>
+
         <!-- legs -->
         <rect x="24" y="96" width="14" height="44" rx="6" class="leg" />
         <rect x="82" y="96" width="14" height="44" rx="6" class="leg" />
         <rect x="20" y="134" width="22" height="12" rx="5" class="foot" />
         <rect x="78" y="134" width="22" height="12" rx="5" class="foot" />
+
+        <!-- side utility arms -->
+        <g id="armL" class="arm">
+          <rect x="20" y="66" width="8" height="26" rx="4" class="leg" />
+        </g>
+        <g id="armR" class="arm">
+          <rect x="92" y="66" width="8" height="26" rx="4" class="leg" />
+        </g>
 
         <!-- body -->
         <rect x="32" y="52" width="56" height="62" rx="14" class="body" />
@@ -30,15 +54,24 @@
         <!-- dome -->
         <path d="M30 54 A30 30 0 0 1 90 54 Z" class="dome" />
         <path d="M34 52 A26 26 0 0 1 86 52" class="dome-shine" fill="none" />
+        <!-- dome side sensors -->
+        <circle cx="38" cy="46" r="2" class="dome-sensor" />
+        <circle cx="82" cy="46" r="2" class="dome-sensor" />
 
         <!-- big eye / lens -->
+        <circle cx="60" cy="40" r="12.5" class="lens-glow" />
         <circle cx="60" cy="40" r="11" class="eye-ring" />
         <circle id="eye" cx="60" cy="40" r="7" class="eye" />
         <circle cx="57" cy="37" r="2.2" class="eye-glint" />
+        <!-- eyelid: closes over the lens for blink / sleep -->
+        <rect id="eyelid" x="48" y="28" width="24" height="25" rx="11" class="eyelid" />
 
         <!-- antenna -->
         <line x1="60" y1="22" x2="60" y2="8" class="antenna" />
         <circle cx="60" cy="6" r="3.5" class="antenna-tip" />
+
+        <!-- sleep zzz -->
+        <text id="zzz" x="94" y="26" class="zzz">z</text>
       </svg>
     </div>
 

@@ -73,19 +73,11 @@ The installer lands in `release/` (e.g. `r10-0.1.0-arm64.dmg`). Open the `.dmg`,
 >
 > (On macOS Sequoia and later, Apple removed the old right-click → **Open** shortcut — you must use one of the two methods above.)
 
-Build for both Apple Silicon and Intel with `npm run dist` (default), or a single arch with `npx electron-builder --mac dmg --arm64` (Apple Silicon) / `--x64` (Intel). You get one `.dmg` per architecture:
+r10 is built **Apple Silicon only** (`arm64`) — that's what `npm run dist` produces:
 
 - `r10-<version>-arm64.dmg` — Apple Silicon (Metal-accelerated built-in engine)
-- `r10-<version>.dmg` — Intel (x64 built-in engine)
 
-> **Building the Intel `.dmg` from an Apple Silicon Mac:** `npm install` only fetches the engine's native binary for *your* CPU, so a cross-arch build would otherwise ship the wrong binary and the built-in engine would fail on Intel. Pull the x64 engine binary first:
-> ```bash
-> npm install --no-save --force @node-llama-cpp/mac-x64
-> npx electron-builder --mac dmg --x64
-> ```
-> (Do the reverse — `@node-llama-cpp/mac-arm64-metal` — when building the arm64 `.dmg` from an Intel Mac.)
-
-> **Universal (single fat) `.dmg`:** not used here — `@electron/universal`'s ASAR merge currently chokes on the engine's unpacked native binaries ("pattern is too long"). Two per-arch `.dmg`s avoid that and keep each download smaller.
+> **Why arm64-only?** The built-in engine is Metal-accelerated on Apple Silicon, which is the whole point of running locally, and every current Mac is Apple Silicon. Dropping the Intel target keeps one small `.dmg` per release and avoids cross-arch native-binary juggling. If you ever need an Intel build, add `"x64"` back to `build.mac.target[0].arch` in `package.json` and pull the x64 engine binary first (`npm install --no-save --force @node-llama-cpp/mac-x64`).
 
 ## Build a Windows app (.exe installer)
 
@@ -106,7 +98,7 @@ This yields `release/r10 Setup <version>.exe` (x64). The installer lets the user
 
 A GitHub Actions workflow (`.github/workflows/build.yml`) builds the installers on GitHub's runners — no local toolchain needed:
 
-- **macOS** runner → both `.dmg`s (arm64 + Intel x64)
+- **macOS** runner → the Apple Silicon `.dmg` (arm64)
 - **Windows** runner → the `.exe` installer
 
 **Cut a release** by pushing a version tag:

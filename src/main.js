@@ -171,6 +171,15 @@ function droidBubble(text) {
   if (droidWin && !droidWin.isDestroyed()) droidWin.webContents.send('droid:bubble', text);
 }
 
+// Short astromech acknowledgements shown in the desktop bubble when r10 finishes
+// a reply (the real answer is in the chat window). Droid character, not English.
+const DONE_CHIRPS = ['bdeep! done.', 'wheee-oo ✓', 'boop— sent.', 'chk. computed.', 'vwoorp!'];
+const LOOK_CHIRPS = ['bdeep— scan complete.', 'wheee. i see it.', 'chk-chk. analyzed.'];
+function pickChirp(fromImage) {
+  const pool = fromImage ? LOOK_CHIRPS : DONE_CHIRPS;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 ipcMain.handle('chat:send', async (e, { history, message, image }) => {
   const sender = e.sender;
   if (activeAbort) activeAbort.abort();
@@ -192,9 +201,15 @@ ipcMain.handle('chat:send', async (e, { history, message, image }) => {
       },
     });
     const full = result.text;
+    // The full, human-language answer belongs in the chat window. On the desktop,
+    // r10 stays in character: a quick "talking" beat, a happy wiggle, and a short
+    // astromech chirp instead of parroting the reply text.
     setDroidState('talking');
-    droidBubble(full);
-    setTimeout(() => setDroidState('idle'), 4500);
+    setTimeout(() => {
+      setDroidState('happy');
+      droidBubble(pickChirp(image));
+      setTimeout(() => setDroidState('idle'), 2200);
+    }, 1200);
     return { ok: true, text: full, backend: result.backend };
   } catch (err) {
     setDroidState('idle');

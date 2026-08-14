@@ -1,6 +1,6 @@
 {
   "name": "r10",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "r10 — a cute animated AI droid companion for your Mac desktop, powered by local Ollama.",
   "author": "kkelley",
   "license": "MIT",
@@ -51,8 +51,7 @@
         {
           "target": "dmg",
           "arch": [
-            "arm64",
-            "x64"
+            "arm64"
           ]
         }
       ],
