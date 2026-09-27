@@ -2,7 +2,7 @@
 
 A cute, animated AI droid companion for your Mac desktop — a little R2-style astromech named **r10** that floats on your screen, chats in bubbles, and can take a look at what you're doing when you ask.
 
-- **Floating animated droid** — white/red/black astromech, always-on-top, drag it anywhere. It bobs, blinks, and reacts (thinking / looking / talking).
+- **Floating 3D droid** — a live three.js utility droid (white shell, cyan/magenta accents), always-on-top, drag it anywhere. It bobs, blinks, swivels its dome, shifts between two- and three-leg stances, and reacts (thinking / looking / talking).
 - **Click to chat** — a clean chat window with streaming replies.
 - **On-demand screen awareness** — tap the eye button and r10 captures your screen *once* and helps with what it sees. Nothing is watched in the background.
 - **100% local AI** — runs entirely on your Mac. No cloud, no API keys, your screen never leaves the machine.
