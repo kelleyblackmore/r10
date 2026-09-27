@@ -47,6 +47,16 @@ A little droid appears in the bottom-right of your screen.
 > First time you use the eye button, macOS asks for **Screen Recording** permission
 > (System Settings → Privacy & Security → Screen Recording). Grant it and re-tap the eye button.
 
+## Pre-commit hooks
+
+The repo uses [pre-commit](https://pre-commit.com) for basic hygiene checks (whitespace, YAML/JSON validity, merge markers, private keys, large files such as stray `.gguf` models, and a `node --check` syntax pass on JS). Enable it once per clone:
+
+```bash
+pip install pre-commit       # or: brew install pre-commit
+pre-commit install
+pre-commit run --all-files   # optional: check everything now
+```
+
 ## Build a double-click app (.dmg)
 
 ```bash

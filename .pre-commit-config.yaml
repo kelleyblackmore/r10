@@ -1,0 +1,29 @@
+# Git hooks managed by pre-commit (https://pre-commit.com).
+#   pip install pre-commit   # or: brew install pre-commit
+#   pre-commit install       # run on every `git commit`
+#   pre-commit run --all-files
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: detect-private-key
+      # Bundled GGUF models belong in build/models/ (gitignored), never in git.
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+
+  - repo: local
+    hooks:
+      - id: node-check
+        name: node --check (JS syntax)
+        entry: node --check
+        language: system
+        types: [javascript]
