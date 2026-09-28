@@ -19,18 +19,23 @@ const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 let baseState = 'idle';
 let bubbleTimer = null;
+let alertUntil = 0;      // while a system alert is showing, ordinary bubbles wait their turn
 let idleTimer = null;    // idle -> sleep
 let chatterTimer = null; // periodic idle droidspeak
 
 function showBubble(text, opts = {}) {
   if (!text) return;
+  // A visible system alert outranks chatter and reply chirps; drop those until it expires.
+  if (!opts.alert && Date.now() < alertUntil) return;
+  const ms = opts.ms || 6000;
+  alertUntil = opts.alert ? Date.now() + ms : 0;
   const trimmed = text.trim().slice(0, 140);
   bubble.textContent = trimmed + (text.trim().length > 140 ? '…' : '');
   bubble.classList.toggle('droidspeak', !!opts.droidspeak);
   bubble.classList.toggle('alert', !!opts.alert);
   bubble.classList.remove('hidden');
   clearTimeout(bubbleTimer);
-  bubbleTimer = setTimeout(() => bubble.classList.add('hidden'), opts.ms || 6000);
+  bubbleTimer = setTimeout(() => bubble.classList.add('hidden'), ms);
 }
 
 function chirp() {

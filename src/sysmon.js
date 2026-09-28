@@ -101,7 +101,10 @@ function resetAlerts(key) {
 function check(key, value, threshold, sustain, message, onAlert) {
   if (!threshold) return resetAlerts(key);
   const st = alertState[key];
-  if (value == null) return;
+  if (value == null) {
+    st.streak = 0; // a gap in readings breaks the "N samples in a row" requirement
+    return;
+  }
   if (value >= threshold) {
     st.streak = (st.streak || 0) + 1;
     if (st.streak < sustain) return;
@@ -112,7 +115,7 @@ function check(key, value, threshold, sustain, message, onAlert) {
     }
   } else {
     st.streak = 0;
-    if (st.alerted && value < threshold - REARM_MARGIN) st.alerted = false;
+    if (st.alerted && value <= threshold - REARM_MARGIN) st.alerted = false;
   }
 }
 

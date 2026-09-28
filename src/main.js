@@ -274,7 +274,8 @@ function pickChirp(fromImage) {
 ipcMain.handle('chat:send', async (e, { history, message, image }) => {
   const sender = e.sender;
   if (activeAbort) activeAbort.abort();
-  activeAbort = new AbortController();
+  const controller = new AbortController();
+  activeAbort = controller;
   setDroidState(image ? 'looking' : 'thinking');
 
   try {
@@ -283,7 +284,7 @@ ipcMain.handle('chat:send', async (e, { history, message, image }) => {
       history: history || [],
       message,
       image: image || null,
-      signal: activeAbort.signal,
+      signal: controller.signal,
       onChunk: (chunk) => {
         if (!sender.isDestroyed()) sender.send('chat:chunk', chunk);
       },
@@ -307,7 +308,9 @@ ipcMain.handle('chat:send', async (e, { history, message, image }) => {
     if (err.name === 'AbortError') return { ok: false, aborted: true };
     return { ok: false, error: err.message, kind: err.kind };
   } finally {
-    activeAbort = null;
+    // Only clear if we're still the current request — an older, aborted request
+    // finishing late must not make a newer in-flight reply look idle.
+    if (activeAbort === controller) activeAbort = null;
   }
 });
 
