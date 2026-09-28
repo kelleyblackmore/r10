@@ -1,8 +1,12 @@
-import { createDroid } from './droid-model.js';
-
 const droid = document.getElementById('droid');
 const bubble = document.getElementById('bubble');
-const model = createDroid(document.getElementById('stage'));
+
+// The 3D model is loaded last (see bottom), after every input/IPC handler is
+// registered, so a WebGL failure can never leave the droid unclickable. Until
+// then — or for good, if WebGL is unavailable — state changes go to a no-op.
+const NO_MODEL = { setState() {}, poke() {}, curious() {}, happy() {} };
+let model = NO_MODEL;
+let flat = false; // true when showing the non-WebGL fallback droid
 
 // ---- droidspeak: r10 talks in astromech chirps on the desktop, not English ----
 const CHIRPS = [
@@ -35,7 +39,7 @@ function chirp() {
 // ---- state application (base state + transient reaction classes) ----
 function applyState() {
   const transient = droid.classList.contains('poke') ? ' poke' : '';
-  droid.className = 'droid ' + baseState + transient;
+  droid.className = 'droid ' + baseState + transient + (flat ? ' flat' : '');
   model.setState(baseState);
   if (baseState === 'happy') model.happy();
 }
@@ -151,3 +155,14 @@ setTimeout(() => {
   model.curious(1500);
   showBubble(rand(GREETINGS), { droidspeak: true, ms: 3500 });
 }, 900);
+
+// ---- 3D body: load it now that the droid is fully interactive ----
+try {
+  const { createDroid } = await import('./droid-model.js');
+  model = createDroid(document.getElementById('stage'));
+  model.setState(baseState);
+} catch (err) {
+  console.warn('r10: 3D droid unavailable, using flat fallback:', err);
+  flat = true;
+  applyState();
+}

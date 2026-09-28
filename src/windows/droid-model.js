@@ -210,6 +210,12 @@ export function createDroid(canvas) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
+  // If the GPU drops the context (sleep/wake, driver reset), pause rendering
+  // until three.js restores it instead of throwing every frame.
+  let contextLost = false;
+  canvas.addEventListener('webglcontextlost', (e) => { e.preventDefault(); contextLost = true; });
+  canvas.addEventListener('webglcontextrestored', () => { contextLost = false; });
+
   const scene = new THREE.Scene();
   scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8580, 1.6));
   const key = new THREE.DirectionalLight(0xffffff, 2.2);
@@ -254,7 +260,7 @@ export function createDroid(canvas) {
     requestAnimationFrame(frame);
     // Throttle: ~30fps awake, ~8fps asleep. It's a desktop pet, not a game.
     const minGap = state === 'sleeping' ? 120 : 32;
-    if (now - lastFrame < minGap) return;
+    if (contextLost || now - lastFrame < minGap) return;
     const dt = Math.min((now - (lastFrame || now)) / 1000, 0.1);
     lastFrame = now;
     const t = (now - t0) / 1000;
