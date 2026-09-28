@@ -90,11 +90,18 @@ function summary(s) {
 // getting worse, and re-arms once it has clearly recovered — so r10 flags real
 // trouble without nagging every 30 seconds.
 
-const alertState = { disk: {}, mem: {}, cpu: { streak: 0 } };
+const alertState = { disk: {}, mem: {}, cpu: {} };
+
+// Forget alert history — used when monitoring (or one metric) is switched off,
+// so a metric that recovered in the meantime alerts normally once it's back on.
+function resetAlerts(key) {
+  for (const k of key ? [key] : Object.keys(alertState)) alertState[k] = {};
+}
 
 function check(key, value, threshold, sustain, message, onAlert) {
+  if (!threshold) return resetAlerts(key);
   const st = alertState[key];
-  if (!threshold || value == null) return;
+  if (value == null) return;
   if (value >= threshold) {
     st.streak = (st.streak || 0) + 1;
     if (st.streak < sustain) return;
@@ -132,6 +139,7 @@ function start(cfg, { onSample, onAlert }) {
   const gen = ++generation;
   if (!cfg.enabled) {
     latest = null;
+    resetAlerts();
     return;
   }
   const tick = async () => {
