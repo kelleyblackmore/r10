@@ -1,7 +1,8 @@
-'use strict';
+import { createDroid } from './droid-model.js';
 
 const droid = document.getElementById('droid');
 const bubble = document.getElementById('bubble');
+const model = createDroid(document.getElementById('stage'));
 
 // ---- droidspeak: r10 talks in astromech chirps on the desktop, not English ----
 const CHIRPS = [
@@ -35,6 +36,8 @@ function chirp() {
 function applyState() {
   const transient = droid.classList.contains('poke') ? ' poke' : '';
   droid.className = 'droid ' + baseState + transient;
+  model.setState(baseState);
+  if (baseState === 'happy') model.happy();
 }
 
 function setState(state) {
@@ -86,6 +89,7 @@ function scheduleChatter() {
 // ---- reactions ----
 function poke() {
   droid.classList.add('poke');
+  model.poke();
   setTimeout(() => droid.classList.remove('poke'), 340);
 }
 
@@ -103,8 +107,7 @@ window.r10.onBubble((text) => showBubble(text, { droidspeak: true }));
 droid.addEventListener('mouseenter', () => {
   wake(true);
   if (baseState === 'idle') {
-    droid.classList.add('curious');
-    setTimeout(() => droid.classList.remove('curious'), 1400);
+    model.curious(1400);
   }
 });
 
@@ -145,7 +148,6 @@ window.addEventListener('mouseup', () => {
 // ---- boot: greet, then settle into the idle loop ----
 setState('idle');
 setTimeout(() => {
-  droid.classList.add('curious');
-  setTimeout(() => droid.classList.remove('curious'), 1500);
+  model.curious(1500);
   showBubble(rand(GREETINGS), { droidspeak: true, ms: 3500 });
 }, 900);

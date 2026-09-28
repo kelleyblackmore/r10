@@ -16,7 +16,7 @@ let tray = null;
 let activeAbort = null;
 
 const DROID_W = 160;
-const DROID_H = 190;
+const DROID_H = 210;
 const CHAT_W = 380;
 const CHAT_H = 520;
 

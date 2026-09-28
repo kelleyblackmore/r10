@@ -1,6 +1,6 @@
 {
   "name": "r10",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "r10 — a cute animated AI droid companion for your Mac desktop, powered by local Ollama.",
   "author": "kkelley",
   "license": "MIT",
@@ -11,7 +11,8 @@
     "dist:win": "electron-builder --win"
   },
   "dependencies": {
-    "node-llama-cpp": "^3.0.0"
+    "node-llama-cpp": "^3.0.0",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "electron": "^33.2.0",
