@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('r10', {
   drag: (dx, dy) => ipcRenderer.send('droid:drag', { dx, dy }),
   onState: (cb) => ipcRenderer.on('droid:state', (_e, s) => cb(s)),
   onBubble: (cb) => ipcRenderer.on('droid:bubble', (_e, t) => cb(t)),
+  onAlert: (cb) => ipcRenderer.on('droid:alert', (_e, t) => cb(t)),
 
   // chat window
   hideChat: () => ipcRenderer.send('chat:hide'),
@@ -29,5 +30,6 @@ contextBridge.exposeInMainWorld('r10', {
   engineStatus: () => ipcRenderer.invoke('engine:status'),
   ensureModel: (vision) => ipcRenderer.invoke('model:ensure', { vision }),
   onProgress: (cb) => ipcRenderer.on('model:progress', (_e, p) => cb(p)),
+  systemStats: () => ipcRenderer.invoke('system:stats'),
   openExternal: (url) => ipcRenderer.send('open-external', url),
 });

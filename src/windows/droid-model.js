@@ -250,6 +250,7 @@ export function createDroid(canvas) {
   const IRIS = {
     idle: '#19c3f0', talking: '#19c3f0', curious: '#19c3f0', happy: '#19c3f0',
     thinking: '#d6006c', looking: '#e8fbff', sleeping: '#19c3f0',
+    alert: '#ffa21a',
   };
 
   const lerp = THREE.MathUtils.lerp;
@@ -274,7 +275,7 @@ export function createDroid(canvas) {
 
     // --- dome heading ---
     let yawTarget = FACE + Math.sin(t * 0.35) * 0.55 + Math.sin(t * 0.9) * 0.12; // idle look-around
-    if (state === 'looking' || state === 'talking' || now < curiousUntil) yawTarget = FACE;
+    if (state === 'looking' || state === 'talking' || state === 'alert' || now < curiousUntil) yawTarget = FACE;
     if (state === 'sleeping') yawTarget = FACE - 0.35;
     if (state === 'thinking') {
       domeYaw += dt * 4.2; // full spins while computing
@@ -297,6 +298,7 @@ export function createDroid(canvas) {
     if (state === 'idle') y = Math.sin(t * 1.96) * 0.008;
     if (now < happyUntil) y = Math.abs(Math.sin(t * 9)) * 0.06;
     if (now < curiousUntil) roll = Math.sin((curiousUntil - now) / 1400 * Math.PI) * 0.1;
+    if (state === 'alert') roll = Math.sin(t * 14) * 0.03; // agitated wobble
     if (now < pokeUntil) roll = Math.sin((pokeUntil - now) / 340 * Math.PI * 2) * 0.07;
     rig.droid.position.y = y;
     rig.droid.rotation.z = roll;
@@ -309,6 +311,7 @@ export function createDroid(canvas) {
     L.iris.emissive.copy(irisColor);
     let irisI = 1.1;
     if (state === 'thinking') irisI = 0.7 + 0.6 * Math.abs(Math.sin(t * 4.5));
+    if (state === 'alert') irisI = 0.6 + 1.6 * Math.abs(Math.sin(t * 6));
     if (state === 'looking') irisI = 2.2;
     if (state === 'talking') irisI = 1 + 0.35 * Math.random();
     L.iris.emissiveIntensity = irisI * glowLevel;

@@ -47,6 +47,7 @@ html, body {
 .fb-right { right: 25px; }
 .droid.flat.sleeping .fb-eye { background: #3a4a50; }
 .droid.flat.thinking .fb-eye { background: #d6006c; }
+.droid.flat.alert .fb-eye { background: #ffa21a; }
 
 /* All droid motion (bob, blink, dome, stance, lights) is animated in 3D by
    droid-model.js; CSS only handles the sleeping zzz overlay. */
@@ -99,4 +100,7 @@ html, body {
   letter-spacing: 0.3px;
   color: #b0005a;
 }
+/* system-monitor alerts: amber, so they read as a warning, not chatter */
+.bubble.alert { color: #9a4a00; background: #fff4e0; box-shadow: 0 0 0 1.5px #ffa21a, 0 4px 14px rgba(0, 0, 0, 0.25); }
+.bubble.alert::after { border-top-color: #fff4e0; }
 .bubble.hidden { opacity: 0; transform: translateX(-50%) translateY(4px); }

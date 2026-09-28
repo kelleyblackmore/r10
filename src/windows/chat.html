@@ -55,6 +55,16 @@
         <label>Ollama chat model<input id="setChat" type="text" placeholder="llama3.2" /></label>
         <label>Ollama vision model<input id="setVision" type="text" placeholder="llama3.2-vision" /></label>
         <div id="modelHint" class="hint"></div>
+        <hr class="sep" />
+        <label class="check"><input id="setMonEnabled" type="checkbox" /> Watch system health (disk, memory, CPU)</label>
+        <div class="thresholds">
+          <label>Disk %<input id="setMonDisk" type="number" min="0" max="100" step="1" /></label>
+          <label>Memory %<input id="setMonMem" type="number" min="0" max="100" step="1" /></label>
+          <label>CPU %<input id="setMonCpu" type="number" min="0" max="100" step="1" /></label>
+        </div>
+        <label class="check"><input id="setMonNotify" type="checkbox" /> Also send a system notification</label>
+        <div id="monitorHint" class="hint"></div>
+        <hr class="sep" />
         <label>Persona / system prompt<textarea id="setPrompt" rows="4"></textarea></label>
         <div class="settings-actions">
           <button id="saveSettings" class="primary">Done</button>

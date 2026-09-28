@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain, screen, shell, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, shell, Tray, Menu, nativeImage, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const settings = require('./settings');
@@ -9,6 +9,7 @@ const openai = require('./openai');
 const engine = require('./engine');
 const llama = require('./llama');
 const { captureScreenBase64 } = require('./screen');
+const sysmon = require('./sysmon');
 
 let droidWin = null;
 let chatWin = null;
@@ -160,7 +161,10 @@ function createTray() {
 function refreshTray() {
   if (!tray) return;
   const visible = !!(chatWin && chatWin.isVisible());
+  const stats = sysmon.latest();
+  tray.setToolTip(stats ? `r10 — ${sysmon.summary(stats)}` : 'r10');
   tray.setContextMenu(Menu.buildFromTemplate([
+    ...(stats ? [{ label: sysmon.summary(stats), enabled: false }, { type: 'separator' }] : []),
     { label: visible ? 'Hide chat' : 'Show chat', click: () => toggleChat() },
     { label: 'Settings…', click: () => { showChat(); sendChat('chat:open-settings'); } },
     { type: 'separator' },
@@ -203,7 +207,11 @@ ipcMain.on('app:quit', () => {
 });
 
 ipcMain.handle('settings:get', () => settings.load());
-ipcMain.handle('settings:set', (_e, partial) => settings.save(partial));
+ipcMain.handle('settings:set', (_e, partial) => {
+  const saved = settings.save(partial);
+  startMonitor(); // pick up any threshold / on-off change right away
+  return saved;
+});
 ipcMain.handle('ollama:models', async () => {
   try {
     return { ok: true, models: await ollama.listModels(settings.load()) };
@@ -309,6 +317,42 @@ ipcMain.on('chat:stop', () => {
 
 ipcMain.on('open-external', (_e, url) => shell.openExternal(url));
 
+// ---- system health monitor ----
+// r10 keeps an eye on disk / memory / CPU and, when one starts to fill up,
+// switches to an alert pose with a readout bubble (plus an optional native
+// notification in case the droid is out of sight).
+
+function startMonitor() {
+  const s = settings.load();
+  sysmon.start(
+    {
+      enabled: s.monitorEnabled,
+      diskPct: Number(s.monitorDiskPct) || 0,
+      memPct: Number(s.monitorMemPct) || 0,
+      cpuPct: Number(s.monitorCpuPct) || 0,
+    },
+    { onSample: () => refreshTray(), onAlert: raiseAlert },
+  );
+  refreshTray();
+}
+
+function raiseAlert(alert) {
+  if (droidWin && !droidWin.isDestroyed()) droidWin.webContents.send('droid:alert', alert.text);
+  // Don't yank the droid out of a reply in progress; the bubble alone is enough then.
+  if (!activeAbort) {
+    setDroidState('alert');
+    setTimeout(() => { if (!activeAbort) setDroidState('idle'); }, 9000);
+  }
+  if (settings.load().monitorNotify && Notification.isSupported()) {
+    new Notification({ title: 'r10 — system alert', body: alert.text, silent: false }).show();
+  }
+}
+
+ipcMain.handle('system:stats', () => {
+  const s = sysmon.latest();
+  return s ? sysmon.summary(s) : null;
+});
+
 // ---- lifecycle ----
 
 if (app.dock) app.dock.hide(); // menu-bar / accessory style, no dock icon
@@ -317,6 +361,7 @@ app.whenReady().then(() => {
   createDroidWindow();
   createChatWindow();
   createTray();
+  startMonitor();
 });
 
 app.on('window-all-closed', () => {

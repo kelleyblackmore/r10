@@ -262,3 +262,8 @@ html, body {
 .sep { border: none; border-top: 1px solid #e5e7eb; margin: 4px 0; }
 
 .hidden { display: none !important; }
+
+/* system-monitor settings */
+.settings label.check { flex-direction: row; align-items: center; gap: 8px; }
+.thresholds { display: flex; gap: 8px; }
+.thresholds label { flex: 1; min-width: 0; }
