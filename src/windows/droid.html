@@ -13,6 +13,12 @@
 
     <div id="droid" class="droid idle" title="Click to chat · drag to move">
       <canvas id="stage" width="150" height="160"></canvas>
+      <!-- flat fallback, shown only if WebGL can't start -->
+      <div class="fallback" aria-hidden="true">
+        <span class="fb-dome"><span class="fb-eye"></span></span>
+        <span class="fb-body"><span class="fb-panel"></span></span>
+        <span class="fb-leg fb-left"></span><span class="fb-leg fb-right"></span>
+      </div>
       <!-- sleep zzz -->
       <span id="zzz" class="zzz">z</span>
     </div>

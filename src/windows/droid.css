@@ -23,6 +23,31 @@ html, body {
 .droid:active { cursor: grabbing; }
 #stage { display: block; width: 150px; height: 160px; }
 
+/* ---- flat fallback (no WebGL): a simple static droid in the v2 palette ---- */
+.fallback { display: none; position: absolute; inset: 0; }
+.droid.flat #stage { display: none; }
+.droid.flat .fallback { display: block; }
+.fallback span { position: absolute; display: block; }
+.fb-dome {
+  left: 43px; top: 30px; width: 64px; height: 34px;
+  background: #eceae7; border: 2px solid #201e1d; border-bottom: 0;
+  border-radius: 34px 34px 0 0;
+}
+.fb-eye {
+  left: 24px; top: 9px; width: 14px; height: 14px; border-radius: 50%;
+  background: #19c3f0; border: 3px solid #201e1d;
+}
+.fb-body {
+  left: 43px; top: 64px; width: 64px; height: 70px;
+  background: #eceae7; border: 2px solid #201e1d; border-radius: 0 0 8px 8px;
+}
+.fb-panel { left: 12px; top: 10px; width: 36px; height: 10px; background: #0088b0; border: 3px solid #201e1d; }
+.fb-leg { top: 60px; width: 16px; height: 96px; background: #eceae7; border: 2px solid #201e1d; border-bottom: 10px solid #201e1d; }
+.fb-left { left: 25px; }
+.fb-right { right: 25px; }
+.droid.flat.sleeping .fb-eye { background: #3a4a50; }
+.droid.flat.thinking .fb-eye { background: #d6006c; }
+
 /* All droid motion (bob, blink, dome, stance, lights) is animated in 3D by
    droid-model.js; CSS only handles the sleeping zzz overlay. */
 .zzz { display: none; position: absolute; right: 18px; top: 8px; }
