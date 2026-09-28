@@ -39,6 +39,14 @@ const DEFAULTS = {
     },
   },
 
+  // System health monitor: r10 watches disk / memory / CPU and pipes up when
+  // something is getting full. Thresholds are percent used; 0 disables a metric.
+  monitorEnabled: true,
+  monitorDiskPct: 90,
+  monitorMemPct: 90,
+  monitorCpuPct: 95,
+  monitorNotify: true, // also post a native OS notification (in case you're not looking at r10)
+
   systemPrompt:
     'You are r10 — a compact astromech-style utility droid living on the user\'s Mac desktop. ' +
     'You are NOT a chatty human assistant. You communicate like a Star Wars astromech: clipped, dry, and mechanical, with a spark of personality. Follow these rules:\n' +

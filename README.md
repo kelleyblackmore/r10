@@ -5,6 +5,7 @@ A cute, animated AI droid companion for your Mac desktop — a little R2-style a
 - **Floating 3D droid** — a live three.js utility droid (white shell, cyan/magenta accents), always-on-top, drag it anywhere. It bobs, blinks, swivels its dome, shifts between two- and three-leg stances, and reacts (thinking / looking / talking).
 - **Click to chat** — a clean chat window with streaming replies.
 - **On-demand screen awareness** — tap the eye button and r10 captures your screen *once* and helps with what it sees. Nothing is watched in the background.
+- **System health watch** — r10 checks disk, memory, and CPU every 30 seconds. When something starts to fill up, the droid switches to an alert pose: amber pulsing eye, a warning bubble such as *"disk 92% full — 18 GB left"*, and optionally a system notification. It won't nag. It alerts once when a metric crosses its threshold, again only if it gets 5+ points worse, and resets once the metric recovers. Current readings also appear in the menu-bar item.
 - **100% local AI** — runs entirely on your Mac. No cloud, no API keys, your screen never leaves the machine.
 
 ## AI engine: built-in + Ollama + API
@@ -165,6 +166,7 @@ Open chat → Settings:
 - **API URL / key / model / vision model** — for the OpenAI-compatible engine (work/hosted gateway). The settings panel pings the endpoint to confirm it's reachable.
 - **Ollama URL** — default `http://127.0.0.1:11434`
 - **Ollama chat / vision model** — defaults `llama3.2` / `llama3.2-vision`
+- **System health** — on/off, alert thresholds as % used (defaults: disk 90, memory 90, CPU 95; set 0 to turn one off), and whether to also send a system notification. CPU has to stay high for about 5 minutes before r10 alerts. On macOS, memory is measured the way Activity Monitor's *Memory Pressure* graph measures it, so cached files don't count as "full".
 - **Persona** — the system prompt that gives r10 its personality
 
 Settings **auto-save the moment you change a field** (no Save step needed — closing or re-opening the panel never reverts them).
@@ -182,6 +184,7 @@ Electron main process (src/main.js)
 ├── llama.js          → embedded in-process engine via node-llama-cpp (.gguf models)
 ├── ollama.js         → streaming chat client for a local Ollama server
 ├── openai.js         → streaming client for any OpenAI-compatible API (work/hosted)
+├── sysmon.js         → disk / memory / CPU sampling + threshold alerts (all local)
 ├── screen.js         → on-demand screenshot (macOS `screencapture`; desktopCapturer elsewhere)
 └── settings.js       → JSON settings in userData
 ```

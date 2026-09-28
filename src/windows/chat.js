@@ -513,10 +513,21 @@ async function loadSettingsForm() {
   $('setChat').value = s.chatModel;
   $('setVision').value = s.visionModel;
   $('setPrompt').value = s.systemPrompt;
+  $('setMonEnabled').checked = !!s.monitorEnabled;
+  $('setMonDisk').value = s.monitorDiskPct;
+  $('setMonMem').value = s.monitorMemPct;
+  $('setMonCpu').value = s.monitorCpuPct;
+  $('setMonNotify').checked = !!s.monitorNotify;
   refreshSettingsHints();
 }
 
 async function refreshSettingsHints() {
+  const stats = await window.r10.systemStats();
+  $('monitorHint').textContent = !$('setMonEnabled').checked
+    ? 'System monitor off.'
+    : 'r10 alerts when a metric reaches its % (0 = never). CPU must stay high ~5 min. ' +
+      (stats ? 'Now: ' + stats + '.' : 'First reading in a moment…');
+
   const st = await window.r10.engineStatus();
   if (st.ok) {
     const e = st.status.embedded;
@@ -558,9 +569,20 @@ async function persistSettings() {
     chatModel: $('setChat').value.trim(),
     visionModel: $('setVision').value.trim(),
     systemPrompt: $('setPrompt').value,
+    monitorEnabled: $('setMonEnabled').checked,
+    monitorDiskPct: pct($('setMonDisk').value),
+    monitorMemPct: pct($('setMonMem').value),
+    monitorCpuPct: pct($('setMonCpu').value),
+    monitorNotify: $('setMonNotify').checked,
   });
   refreshStatus();
   refreshSettingsHints();
+}
+
+// Clamp a threshold field to 0–100 (0 = alert disabled for that metric).
+function pct(v) {
+  const n = Math.round(Number(v));
+  return Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : 0;
 }
 
 let saveTimer = null;
@@ -574,6 +596,7 @@ const TEXT_FIELDS = ['setUrl', 'setChat', 'setVision', 'setOpenaiUrl', 'setOpena
 $('setEngine').addEventListener('change', persistSettings);
 TEXT_FIELDS.forEach((id) => $(id).addEventListener('change', persistSettings));
 $('setPrompt').addEventListener('change', persistSettings);
+['setMonEnabled', 'setMonNotify', 'setMonDisk', 'setMonMem', 'setMonCpu'].forEach((id) => $(id).addEventListener('change', persistSettings));
 [...TEXT_FIELDS, 'setPrompt'].forEach((id) => $(id).addEventListener('input', persistDebounced));
 
 function openSettings() {
