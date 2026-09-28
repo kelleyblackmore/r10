@@ -18,12 +18,14 @@ repos:
       - id: detect-private-key
       # Bundled GGUF models belong in build/models/ (gitignored), never in git.
       - id: check-added-large-files
-        args: [--maxkb=1024]
+        # --enforce-all so CI (clean checkout, nothing staged) still checks every file.
+        args: [--maxkb=1024, --enforce-all]
 
   - repo: local
     hooks:
       - id: node-check
         name: node --check (JS syntax)
-        entry: node --check
+        # node --check takes a single script; any extra paths become argv, so check each file.
+        entry: bash -c 'rc=0; for f in "$@"; do node --check "$f" || rc=1; done; exit $rc' --
         language: system
         types: [javascript]
